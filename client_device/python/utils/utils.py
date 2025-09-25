@@ -1,7 +1,7 @@
 import asyncio
 import threading
 
-def run_async(coro):
+def new_thread(coro):
     # Start a new thread that runs the async function in its own loop
     def run():
         asyncio.run(coro)

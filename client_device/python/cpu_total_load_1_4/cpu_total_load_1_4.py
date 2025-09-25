@@ -2,7 +2,7 @@ import psutil
 import time
 import os
 
-from utils.utils import run_async
+from utils.utils import new_thread
 
 # MEMBERS
 
@@ -17,17 +17,22 @@ def start_measuring():
     global do_measuring
     do_measuring = True
     _crete_data_folder()
-    run_async(_start_new_batch())
+    new_thread(_start_new_batch())
 
 def stop_measuring():
     global do_measuring
     do_measuring = False
 
+    time.sleep(1)
+    _delete_batch_file(writing_batch_file)
+
 def get_batch():
     batch_to_read = writing_batch_file
-    run_async(_start_new_batch())
+    new_thread(_start_new_batch())
     time.sleep(1)
-    return _read_batch_file(batch_to_read)
+    data = _read_batch_file(batch_to_read)
+    _delete_batch_file(batch_to_read)
+    return data
     
     
 # ASSISTANT METHODS
@@ -45,7 +50,6 @@ async def _start_new_batch():
             file.write(line)
             file.flush()
             do_work = do_measuring and writing_batch_file == file_path
-            print(writing_batch_file == file_path)
 
 def _crete_data_folder():
     if not os.path.exists(DATA_FOLDER):
@@ -53,6 +57,10 @@ def _crete_data_folder():
 
 def _get_new_batch_file():
     return f"{DATA_FOLDER}/data_{_timestamp()}"
+
+def _delete_batch_file(file_path):
+    if os.path.exists(file_path):
+        os.remove(file_path)
 
 def _get_cpu_load():
     return psutil.cpu_percent(interval = FREQUENCY)
@@ -62,7 +70,6 @@ def _timestamp():
     return int(time.time())
 
 def _read_batch_file(file_path):
-    print(f"reading: {file_path}")
     data = []
     with open(file_path, "r") as file:
         for line in file:
