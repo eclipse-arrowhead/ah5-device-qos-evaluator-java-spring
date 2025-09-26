@@ -35,4 +35,7 @@ def main():
     server.run()
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("Server stopped by user.")
