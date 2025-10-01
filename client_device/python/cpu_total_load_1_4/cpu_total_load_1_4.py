@@ -3,72 +3,35 @@ import time
 
 from typing import List
 from collections import deque
-from utils.data_model.measurement import Measurement
 from utils.utils import new_thread
 from utils.global_constants import FREQUENCY, WINDOW_SIZE
 
 # MEMBERS
-QUEUE_A: deque[Measurement] = deque(maxlen=WINDOW_SIZE)
-QUEUE_B: deque[Measurement] = deque(maxlen=WINDOW_SIZE)
-current_batch_id = "a"
+QUEUE: deque[float] = deque(maxlen=WINDOW_SIZE)
 do_measuring = False
-waiting = False
 
 # METHODS
 
 def start_measuring_cpu():
     global do_measuring
     do_measuring = True
-    new_thread(_start_new_batch(current_batch_id, QUEUE_A))
+    new_thread(_run())
 
 def stop_measuring_cpu():
     global do_measuring
     do_measuring = False
-
     time.sleep(FREQUENCY)
 
-def get_batch_cpu():
-    global current_batch_id
-
-    reading_queue = None
-    working_queue = None
-    if current_batch_id == "a":
-        reading_queue = QUEUE_A
-        working_queue = QUEUE_B
-        current_batch_id = "b"       
-    else:
-        reading_queue = QUEUE_B
-        working_queue = QUEUE_A
-        current_batch_id = "a"
-    
-    while waiting:
-        time.sleep(0.5)
-
-    new_thread(_start_new_batch(current_batch_id, working_queue))
-    return _read_batch(reading_queue)
+def get_batch_cpu(front: int) -> List[float]:
+    return list(QUEUE)[:front]
     
     
 # ASSISTANT METHODS
 
-async def _start_new_batch(id: str, queue: deque[Measurement]):
-    global waiting
-
-    doWork = True
-    while doWork:
+async def _run():
+    while do_measuring:
         # UTC epoch time in seconds and total cpu load in percentage
-        waiting = True
-        queue.append(Measurement(_timestamp(), _get_cpu_load()))
-        waiting = False
-        doWork = do_measuring and current_batch_id == id
+        QUEUE.append(_get_cpu_load())
 
 def _get_cpu_load() -> float:
     return psutil.cpu_percent(interval = FREQUENCY) # thread blocking call
-
-def _timestamp() -> int:
-    # UTC epoch time in seconds
-    return int(time.time())
-
-def _read_batch(queue: deque[Measurement]) -> List[Measurement]:
-    data = list(queue)
-    queue.clear()
-    return [m.__dict__ for m in data]
