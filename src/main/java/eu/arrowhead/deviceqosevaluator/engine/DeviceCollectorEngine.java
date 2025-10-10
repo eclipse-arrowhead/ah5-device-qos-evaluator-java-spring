@@ -66,7 +66,8 @@ public class DeviceCollectorEngine {
 		logger.debug("refresh started");
 
 		final SystemDeviceMap systemDeviceMap = acquireSystemsAndDevices();
-		updateDatabase(systemDeviceMap);		
+		final List<Device> newOnesToMeasure = updateDatabase(systemDeviceMap);
+		startNewMeasurements(newOnesToMeasure);
 		cleanDatabase();
 	}
 
@@ -106,28 +107,40 @@ public class DeviceCollectorEngine {
 	}
 	
 	//-------------------------------------------------------------------------------------------------
-	private void updateDatabase(final SystemDeviceMap systemDeviceMap) {
+	private List<Device> updateDatabase(final SystemDeviceMap systemDeviceMap) {
 		logger.debug("updateDatabase started");
 		
+		
+		final List<Device> startToMeasure = new ArrayList<>();
 		for (int i = 0; i < systemDeviceMap.getDeviceSize(); ++i) {
+			
+			// Handle devices
 			final Set<Address> deviceAddresses = systemDeviceMap.getDeviceAddresses(i);	
 			final List<Device> deviceRecords = deviceDbService.findByAddresses(deviceAddresses.stream().map(a -> a.address()).collect(Collectors.toSet()));
 			
 			Device deviceRecord = null;
 			if (Utilities.isEmpty(deviceRecords)) {
-				// create new device
+				// Create new device
 				final String address = selectAddress(deviceAddresses);
 				if (!Utilities.isEmpty(address)) {
-					deviceRecord = deviceDbService.create(address);
-					startMeasurement(deviceRecord);
+					deviceRecord = deviceDbService.create(address, systemDeviceMap.hasAugmented(i));
+					startToMeasure.add(deviceRecord);
 				}				
 			} else {
-				// Should be only one but shit happens...
-				deviceRecord = selectDevice(deviceRecords);
+				// Existing device. Should be only one but shit happens...
+				deviceRecord = specifyDevice(deviceRecords);
+				boolean needUpdate = false;
+				if (deviceRecord.isAugmented() != systemDeviceMap.hasAugmented(i)) {
+					deviceRecord.setAugmented(systemDeviceMap.hasAugmented(i));
+					needUpdate = true;
+				}
 				if (deviceRecord.isInactive()) {
 					deviceRecord.setInactive(false);
-					deviceDbService.update(deviceRecord);
-					startMeasurement(deviceRecord);
+					needUpdate = true;
+					startToMeasure.add(deviceRecord);
+				}
+				if (needUpdate) {
+					deviceDbService.update(deviceRecord);					
 				}
 			}
 			
@@ -162,6 +175,8 @@ public class DeviceCollectorEngine {
 			}
 			systemDbService.save(toSave);
 		}
+		
+		return startToMeasure;
 	}
 	
 	//-------------------------------------------------------------------------------------------------
@@ -188,7 +203,7 @@ public class DeviceCollectorEngine {
 	}
 	
 	//-------------------------------------------------------------------------------------------------
-	private Device selectDevice(final List<Device> devices) {
+	private Device specifyDevice(final List<Device> devices) {
 		logger.debug("selectDevices started");
 		
 		Device selected = devices.getFirst();
@@ -207,8 +222,8 @@ public class DeviceCollectorEngine {
 	}
 	
 	//-------------------------------------------------------------------------------------------------
-	private void startMeasurement(final Device device) {
-		logger.debug("startMeasurement started");
+	private void startNewMeasurements(final List<Device> devices) {
+		logger.debug("startNewMeasurements started");
 		
 		// TODO
 	}

@@ -61,11 +61,11 @@ public class DeviceDbService {
 	
 	//-------------------------------------------------------------------------------------------------
 	@Transactional
-	public Device create(final String address) {
+	public Device create(final String address, final boolean augmented) {
 		logger.debug("create started");
 		
 		try {
-			return deviceRepo.saveAndFlush(new Device(UUID.randomUUID(), address, null, false, false));			
+			return deviceRepo.saveAndFlush(new Device(UUID.randomUUID(), address, null, augmented, false));			
 		} catch (final Exception ex) {
 			logger.error(ex.getMessage());
 			logger.debug(ex);
