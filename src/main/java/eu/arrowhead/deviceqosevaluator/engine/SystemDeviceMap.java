@@ -124,6 +124,6 @@ public class SystemDeviceMap {
 	//=================================================================================================
 	// nested class
 
-	public record Address(String address, AddressType type, boolean deviceRelated) {
+	protected record Address(String address, AddressType type, boolean deviceRelated) {
 	}
 }

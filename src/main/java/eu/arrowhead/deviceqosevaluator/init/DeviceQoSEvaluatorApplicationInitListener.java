@@ -26,6 +26,8 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
 import eu.arrowhead.common.init.ApplicationInitListener;
+import eu.arrowhead.deviceqosevaluator.DeviceQoSEvaluatorConstants;
+import eu.arrowhead.deviceqosevaluator.DeviceQoSEvaluatorSystemInfo;
 import eu.arrowhead.deviceqosevaluator.quartz.DeviceCollectorJobScheduler;
 
 @Component
@@ -33,6 +35,9 @@ public class DeviceQoSEvaluatorApplicationInitListener extends ApplicationInitLi
 	
 	//=================================================================================================
 	// members
+	
+	@Autowired
+	private DeviceQoSEvaluatorSystemInfo sysInfo;
 	
 	@Autowired
 	private DeviceCollectorJobScheduler deviceCollectorJobScheduler;
@@ -45,6 +50,10 @@ public class DeviceQoSEvaluatorApplicationInitListener extends ApplicationInitLi
 	//-------------------------------------------------------------------------------------------------
 	@Override
 	protected void customInit(ContextRefreshedEvent event) throws InterruptedException, ConfigurationException {
+		if (sysInfo.getDeviceCollectorJobInterval() < DeviceQoSEvaluatorConstants.DEVICE_COLLECTOR_JOB_INTERVAL_MIN_VALUE) {
+			throw new ConfigurationException("Invalid configuration: '" + DeviceQoSEvaluatorConstants.DEVICE_COLLECTOR_JOB_INTERVAL + "' cannot be less than " + DeviceQoSEvaluatorConstants.DEVICE_COLLECTOR_JOB_INTERVAL_MIN_VALUE + " sec");
+		}
+		
 		try {
 			deviceCollectorJobScheduler.startScheduling();
 			logger.info("Device collection job has been started");

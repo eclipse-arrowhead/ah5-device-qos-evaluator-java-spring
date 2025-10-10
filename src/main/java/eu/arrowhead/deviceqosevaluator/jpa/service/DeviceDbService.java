@@ -24,7 +24,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
+import eu.arrowhead.common.Utilities;
+import eu.arrowhead.common.exception.InternalServerError;
 import eu.arrowhead.deviceqosevaluator.jpa.entity.Device;
 import eu.arrowhead.deviceqosevaluator.jpa.repository.DeviceRepository;
 
@@ -46,13 +50,42 @@ public class DeviceDbService {
 	public List<Device> findByAddresses(final Set<String> addresses) {
 		logger.debug("findByAddresses started");
 		
-		return deviceRepo.findAllByAddressIn(addresses);
+		try {			
+			return deviceRepo.findAllByAddressIn(addresses);
+		} catch (final Exception ex) {
+			logger.error(ex.getMessage());
+			logger.debug(ex);
+			throw new InternalServerError("Database operation error");
+		}
 	}
 	
 	//-------------------------------------------------------------------------------------------------
+	@Transactional
 	public Device create(final String address) {
 		logger.debug("create started");
 		
-		return deviceRepo.saveAndFlush(new Device(UUID.randomUUID(), address, null, false, false));
+		try {
+			return deviceRepo.saveAndFlush(new Device(UUID.randomUUID(), address, null, false, false));			
+		} catch (final Exception ex) {
+			logger.error(ex.getMessage());
+			logger.debug(ex);
+			throw new InternalServerError("Database operation error");
+		}
+	}
+	
+	//-------------------------------------------------------------------------------------------------
+	@Transactional
+	public Device update(final Device device) {
+		logger.debug("update started");
+		Assert.notNull(device.getId(), "device.id is null");
+		Assert.isTrue(!Utilities.isEmpty(device.getAddress()), "device.adrress is empty");
+		
+		try {
+			return deviceRepo.saveAndFlush(device);			
+		} catch (final Exception ex) {
+			logger.error(ex.getMessage());
+			logger.debug(ex);
+			throw new InternalServerError("Database operation error");
+		}
 	}
 }

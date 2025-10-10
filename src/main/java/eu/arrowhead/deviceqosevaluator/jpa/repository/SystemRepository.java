@@ -36,4 +36,7 @@ public interface SystemRepository extends RefreshableRepository<System, Long> {
 
 	//-------------------------------------------------------------------------------------------------
 	public List<System> findAllByDevice(final Device device);
+	
+	//-------------------------------------------------------------------------------------------------
+	public void deleteAllByDeviceIsNull();
 }

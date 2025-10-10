@@ -28,6 +28,7 @@ public class DeviceQoSEvaluatorConstants {
 	
 	public static final String DEVICE_COLLECTOR_JOB_INTERVAL = "device.collector.job.interval";
 	public static final String $DEVICE_COLLECTOR_JOB_INTERVAL_WD = "${" + DEVICE_COLLECTOR_JOB_INTERVAL + ":" + DeviceQoSEvaluatorDefaults.DEVICE_COLLECTOR_JOB_INTERVAL_DEFAULT + "}";
+	public static final int DEVICE_COLLECTOR_JOB_INTERVAL_MIN_VALUE = 10; // sec
 	
 	// API related
 	

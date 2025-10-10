@@ -48,6 +48,12 @@ public class DeviceCollectorJob implements Job {
 	public void execute(final JobExecutionContext context) throws JobExecutionException {
 		logger.debug("DeviceCollectorJob.execute started");
 		
-		deviceCollectorEngine.refresh();
+		try {
+			deviceCollectorEngine.refresh();			
+		} catch (final Exception ex) {
+			logger.error("Device collecting job failure");
+			logger.error(ex.getMessage());
+			logger.debug(ex);
+		}
 	}
 }

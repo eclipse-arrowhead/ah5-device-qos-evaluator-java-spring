@@ -66,57 +66,8 @@ public class DeviceCollectorEngine {
 		logger.debug("refresh started");
 
 		final SystemDeviceMap systemDeviceMap = acquireSystemsAndDevices();
-		
-		for (int i = 0; i < systemDeviceMap.getDeviceSize(); ++i) {
-			final Set<Address> deviceAddresses = systemDeviceMap.getDeviceAddresses(i);	
-			final List<Device> deviceRecords = deviceDbService.findByAddresses(deviceAddresses.stream().map(a -> a.address()).collect(Collectors.toSet()));
-			
-			Device deviceRecord = null;
-			if (Utilities.isEmpty(deviceRecords)) {
-				// create new device with systems
-				final String address = selectAddress(deviceAddresses);
-				if (!Utilities.isEmpty(address)) {
-					deviceRecord = deviceDbService.create(address);					
-				}
-				
-			} else {
-				
-				// should be one, but if not, set systems to one which is active and oldest
-			}
-			
-			// Handle systems
-			final Set<String> deviceSystems = systemDeviceMap.getDeviceSystems(i);
-			final List<System> toSave = new ArrayList<>(deviceSystems.size()); 
-			
-			final List<System> systemRecordsByDevice = systemDbService.findByDeviceId(deviceRecord.getId());
-			for (final System sysRecord : systemRecordsByDevice) {
-				if (!deviceSystems.contains(sysRecord.getName())) {
-					sysRecord.setDevice(null);
-					toSave.add(sysRecord);
-				}
-			}
-			systemDbService.save(toSave);
-			toSave.clear();
-			
-			final List<System> systemRecords = systemDbService.findByNames(deviceSystems);
-			for (final String sysName : deviceSystems) {
-				boolean systemExists = false;
-				for (final System sysRecord : systemRecords) {
-					if (sysRecord.getName().equals(sysName)) {
-						sysRecord.setDevice(deviceRecord);
-						systemExists = true;
-						toSave.add(sysRecord);
-						break;
-					}
-				}
-				if (!systemExists) {
-					toSave.add(new System(sysName, deviceRecord));
-				}
-			}
-			systemDbService.save(toSave);
-		}
-		
-		// delete systems without device and inactivate device without systems 
+		updateDatabase(systemDeviceMap);		
+		cleanDatabase();
 	}
 
 	//=================================================================================================
@@ -155,6 +106,65 @@ public class DeviceCollectorEngine {
 	}
 	
 	//-------------------------------------------------------------------------------------------------
+	private void updateDatabase(final SystemDeviceMap systemDeviceMap) {
+		logger.debug("updateDatabase started");
+		
+		for (int i = 0; i < systemDeviceMap.getDeviceSize(); ++i) {
+			final Set<Address> deviceAddresses = systemDeviceMap.getDeviceAddresses(i);	
+			final List<Device> deviceRecords = deviceDbService.findByAddresses(deviceAddresses.stream().map(a -> a.address()).collect(Collectors.toSet()));
+			
+			Device deviceRecord = null;
+			if (Utilities.isEmpty(deviceRecords)) {
+				// create new device
+				final String address = selectAddress(deviceAddresses);
+				if (!Utilities.isEmpty(address)) {
+					deviceRecord = deviceDbService.create(address);
+					startMeasurement(deviceRecord);
+				}				
+			} else {
+				// Should be only one but shit happens...
+				deviceRecord = selectDevice(deviceRecords);
+				if (deviceRecord.isInactive()) {
+					deviceRecord.setInactive(false);
+					deviceDbService.update(deviceRecord);
+					startMeasurement(deviceRecord);
+				}
+			}
+			
+			// Handle systems
+			final Set<String> deviceSystems = systemDeviceMap.getDeviceSystems(i);
+			final List<System> toSave = new ArrayList<>(deviceSystems.size()); 
+			
+			final List<System> systemRecordsByDevice = systemDbService.findByDeviceId(deviceRecord.getId());
+			for (final System sysRecord : systemRecordsByDevice) {
+				if (!deviceSystems.contains(sysRecord.getName())) {
+					sysRecord.setDevice(null);
+					toSave.add(sysRecord);
+				}
+			}
+			systemDbService.save(toSave);
+			toSave.clear();
+			
+			final List<System> systemRecords = systemDbService.findByNames(deviceSystems);
+			for (final String sysName : deviceSystems) {
+				boolean systemExists = false;
+				for (final System sysRecord : systemRecords) {
+					if (sysRecord.getName().equals(sysName)) {
+						sysRecord.setDevice(deviceRecord);
+						systemExists = true;
+						toSave.add(sysRecord);
+						break;
+					}
+				}
+				if (!systemExists) {
+					toSave.add(new System(sysName, deviceRecord));
+				}
+			}
+			systemDbService.save(toSave);
+		}
+	}
+	
+	//-------------------------------------------------------------------------------------------------
 	private String selectAddress(final Set<Address> addresses) {
 		logger.debug("selectAddress started");
 		
@@ -169,11 +179,45 @@ public class DeviceCollectorEngine {
 				selected = address;
 			}
 			
-			if (selected.deviceRelated()) {
+			if (selected.deviceRelated() && selected.type() != AddressType.HOSTNAME) {
 				break;
 			}			
 		}
 		
 		return selected.address();
 	}
+	
+	//-------------------------------------------------------------------------------------------------
+	private Device selectDevice(final List<Device> devices) {
+		logger.debug("selectDevices started");
+		
+		Device selected = devices.getFirst();
+		
+		if (devices.size() > 1) {
+			for (final Device device : devices) {
+				if (selected.isInactive() && !selected.isInactive()) {
+					selected = device;
+				} else if (!device.isInactive() && (selected.getCreatedAt().isAfter(device.getCreatedAt()))) {
+					selected = device;
+				}
+			}
+		}
+		
+		return selected;
+	}
+	
+	//-------------------------------------------------------------------------------------------------
+	private void startMeasurement(final Device device) {
+		logger.debug("startMeasurement started");
+		
+		// TODO
+	}
+	
+	//-------------------------------------------------------------------------------------------------
+	private void cleanDatabase() {
+		logger.debug("cleanDatabase started");
+		
+		systemDbService.deleteSystemsWithoutDevice();
+	}
+
 }
