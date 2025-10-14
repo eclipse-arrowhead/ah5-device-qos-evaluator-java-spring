@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -30,12 +31,14 @@ import org.springframework.util.MultiValueMap;
 
 import eu.arrowhead.common.Constants;
 import eu.arrowhead.common.Utilities;
+import eu.arrowhead.common.exception.ArrowheadException;
 import eu.arrowhead.common.http.ArrowheadHttpService;
 import eu.arrowhead.deviceqosevaluator.engine.SystemDeviceMap.Address;
 import eu.arrowhead.deviceqosevaluator.jpa.entity.Device;
 import eu.arrowhead.deviceqosevaluator.jpa.entity.System;
 import eu.arrowhead.deviceqosevaluator.jpa.service.DeviceDbService;
 import eu.arrowhead.deviceqosevaluator.jpa.service.SystemDbService;
+import eu.arrowhead.deviceqosevaluator.quartz.AugmentedMeasurementJobScheduler;
 import eu.arrowhead.dto.PageDTO;
 import eu.arrowhead.dto.SystemListResponseDTO;
 import eu.arrowhead.dto.SystemQueryRequestDTO;
@@ -55,6 +58,9 @@ public class DeviceCollectorEngine {
 	
 	@Autowired
 	private SystemDbService systemDbService;
+	
+	@Autowired
+	private AugmentedMeasurementJobScheduler augmentedMeasurementJobScheduler;
 
 	private final Logger logger = LogManager.getLogger(this.getClass());
 
@@ -62,7 +68,7 @@ public class DeviceCollectorEngine {
 	// methods
 
 	//-------------------------------------------------------------------------------------------------
-	public void refresh() {
+	public void refresh() throws SchedulerException, ArrowheadException {
 		logger.debug("refresh started");
 
 		final SystemDeviceMap systemDeviceMap = acquireSystemsAndDevices();
@@ -90,7 +96,7 @@ public class DeviceCollectorEngine {
 		do {
 			final SystemListResponseDTO response = ahHttpService.consumeService(
 					Constants.SERVICE_DEF_SERVICE_REGISTRY_MANAGEMENT,
-					Constants.SERVICE_OP_QUERY,
+					Constants.SERVICE_OP_SYSTEM_QUERY,
 					SystemListResponseDTO.class,
 					new SystemQueryRequestDTO(new PageDTO(pageNumber == 0 ? null : pageNumber, pageSize, null, null), null, null, null, null, null, null),
 					queryParams);
@@ -107,7 +113,7 @@ public class DeviceCollectorEngine {
 	}
 	
 	//-------------------------------------------------------------------------------------------------
-	private List<Device> updateDatabase(final SystemDeviceMap systemDeviceMap) {
+	private List<Device> updateDatabase(final SystemDeviceMap systemDeviceMap) throws SchedulerException {
 		logger.debug("updateDatabase started");
 		
 		
@@ -137,10 +143,12 @@ public class DeviceCollectorEngine {
 				if (deviceRecord.isInactive()) {
 					deviceRecord.setInactive(false);
 					needUpdate = true;
-					startToMeasure.add(deviceRecord);
 				}
 				if (needUpdate) {
 					deviceDbService.update(deviceRecord);					
+				}
+				if (!augmentedMeasurementJobScheduler.isScheduled(deviceRecord)) {
+					startToMeasure.add(deviceRecord);
 				}
 			}
 			
@@ -222,10 +230,12 @@ public class DeviceCollectorEngine {
 	}
 	
 	//-------------------------------------------------------------------------------------------------
-	private void startNewMeasurements(final List<Device> devices) {
+	private void startNewMeasurements(final List<Device> devices) throws SchedulerException {
 		logger.debug("startNewMeasurements started");
 		
-		// TODO
+		for (final Device device : devices) {
+			augmentedMeasurementJobScheduler.start(device);
+		}
 	}
 	
 	//-------------------------------------------------------------------------------------------------

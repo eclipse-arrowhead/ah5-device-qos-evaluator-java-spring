@@ -36,6 +36,9 @@ public class DeviceQoSEvaluatorSystemInfo extends SystemInfo {
 	
 	@Value(DeviceQoSEvaluatorConstants.$DEVICE_COLLECTOR_JOB_INTERVAL_WD)
 	private long deviceCollectorJobInterval;
+	
+	@Value(DeviceQoSEvaluatorConstants.$AUGMENTED_MEASUREMENT_JOB_INTERVAL_WD)
+	private long augmentedMeasurementJobInterval;
 
 	private SystemModel systemModel;
 
@@ -77,6 +80,11 @@ public class DeviceQoSEvaluatorSystemInfo extends SystemInfo {
 	//-------------------------------------------------------------------------------------------------
 	public long getDeviceCollectorJobInterval() {
 		return deviceCollectorJobInterval;
+	}
+	
+	//-------------------------------------------------------------------------------------------------
+	public long getAugmentedMeasurementJobInterval() {
+		return augmentedMeasurementJobInterval;
 	}
 	
 	//=================================================================================================

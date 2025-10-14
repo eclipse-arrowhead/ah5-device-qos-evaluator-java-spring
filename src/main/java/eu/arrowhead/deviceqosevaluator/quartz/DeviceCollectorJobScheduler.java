@@ -16,6 +16,9 @@
  *******************************************************************************/
 package eu.arrowhead.deviceqosevaluator.quartz;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.quartz.JobBuilder;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
@@ -23,14 +26,10 @@ import org.quartz.SimpleScheduleBuilder;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.stereotype.Service;
 
 import eu.arrowhead.deviceqosevaluator.DeviceQoSEvaluatorConstants;
 import eu.arrowhead.deviceqosevaluator.DeviceQoSEvaluatorSystemInfo;
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.Resource;
 
 @Service
 public class DeviceCollectorJobScheduler {
@@ -40,48 +39,49 @@ public class DeviceCollectorJobScheduler {
 
 	@Autowired
 	private DeviceQoSEvaluatorSystemInfo sysInfo;
-	
+
 	@Autowired
-	private SchedulerFactoryBean schedulerFactory;
-
-	@Resource(name = DeviceQoSEvaluatorConstants.DEVICE_COLLECTOR_JOB)
-	private JobDetail jobDetail;
-
 	private Scheduler scheduler;
+	
+	private JobDetail jobDetail;
 	private Trigger currentTrigger;
 	private boolean jobScheduled = false;
+	
+	private final Logger logger = LogManager.getLogger(this.getClass());
 
 	//=================================================================================================
 	// methods
 
 	//-------------------------------------------------------------------------------------------------
-	@PostConstruct
-	public void init() {
-		scheduler = schedulerFactory.getScheduler();
-	}
-
-	//-------------------------------------------------------------------------------------------------
-	public synchronized void startScheduling() throws SchedulerException {
+	public synchronized void start() throws SchedulerException {
+		logger.debug("DeviceCollectorJobScheduler.start started");
+		
 		if (jobScheduled) {
 			return;
 		}
+		
+		jobDetail = JobBuilder.newJob(DeviceCollectorJob.class)
+                .withIdentity(DeviceQoSEvaluatorConstants.DEVICE_COLLECTOR_JOB)
+                .storeDurably()
+                .build();
 
 		currentTrigger = TriggerBuilder.newTrigger()
 				.withIdentity(DeviceQoSEvaluatorConstants.DEVICE_COLLECTOR_JOB_TRIGGER, "deviceJobs")
-				.forJob(jobDetail)
 				.withSchedule(SimpleScheduleBuilder.simpleSchedule()
 						.withIntervalInMilliseconds(sysInfo.getDeviceCollectorJobInterval() * 1000) // from sec to milisec
 						.repeatForever())
 				.build();
 
-		scheduler.scheduleJob(currentTrigger);
+		scheduler.scheduleJob(jobDetail, currentTrigger);
 
 		scheduler.start();
 		jobScheduled = true;
 	}
 
 	//-------------------------------------------------------------------------------------------------
-	public synchronized void stopScheduling() throws SchedulerException {
+	public synchronized void stop() throws SchedulerException {
+		logger.debug("DeviceCollectorJobScheduler.stop started");
+		
 		if (!jobScheduled) {
 			return;
 		}

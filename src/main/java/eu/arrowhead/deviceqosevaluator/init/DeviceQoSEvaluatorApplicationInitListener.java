@@ -16,6 +16,8 @@
  *******************************************************************************/
 package eu.arrowhead.deviceqosevaluator.init;
 
+import java.util.List;
+
 import javax.naming.ConfigurationException;
 
 import org.apache.logging.log4j.LogManager;
@@ -28,6 +30,7 @@ import org.springframework.stereotype.Component;
 import eu.arrowhead.common.init.ApplicationInitListener;
 import eu.arrowhead.deviceqosevaluator.DeviceQoSEvaluatorConstants;
 import eu.arrowhead.deviceqosevaluator.DeviceQoSEvaluatorSystemInfo;
+import eu.arrowhead.deviceqosevaluator.quartz.AugmentedMeasurementJobScheduler;
 import eu.arrowhead.deviceqosevaluator.quartz.DeviceCollectorJobScheduler;
 
 @Component
@@ -42,6 +45,9 @@ public class DeviceQoSEvaluatorApplicationInitListener extends ApplicationInitLi
 	@Autowired
 	private DeviceCollectorJobScheduler deviceCollectorJobScheduler;
 	
+	@Autowired
+	private AugmentedMeasurementJobScheduler augmentedMeasurementJobScheduler;
+	
 	private final Logger logger = LogManager.getLogger(this.getClass());
 
 	//=================================================================================================
@@ -54,8 +60,12 @@ public class DeviceQoSEvaluatorApplicationInitListener extends ApplicationInitLi
 			throw new ConfigurationException("Invalid configuration: '" + DeviceQoSEvaluatorConstants.DEVICE_COLLECTOR_JOB_INTERVAL + "' cannot be less than " + DeviceQoSEvaluatorConstants.DEVICE_COLLECTOR_JOB_INTERVAL_MIN_VALUE + " sec");
 		}
 		
+		if (sysInfo.getAugmentedMeasurementJobInterval() < DeviceQoSEvaluatorConstants.AUGMENTED_MEASUREMENT_JOB_INTERVAL_MIN_VALUE) {
+			throw new ConfigurationException("Invalid configuration: '" + DeviceQoSEvaluatorConstants.AUGMENTED_MEASUREMENT_JOB_INTERVAL + "' cannot be less than " + DeviceQoSEvaluatorConstants.AUGMENTED_MEASUREMENT_JOB_INTERVAL + " sec");
+		}
+		
 		try {
-			deviceCollectorJobScheduler.startScheduling();
+			deviceCollectorJobScheduler.start();
 			logger.info("Device collection job has been started");
 		} catch (final SchedulerException ex) {
 			logger.error("Error while scheduling device collection job");
@@ -68,10 +78,12 @@ public class DeviceQoSEvaluatorApplicationInitListener extends ApplicationInitLi
 	@Override
 	protected void customDestroy() {
 		try {
-			deviceCollectorJobScheduler.stopScheduling();
+			deviceCollectorJobScheduler.stop();
 			logger.info("Device collection job has been terminated");
+			
+			augmentedMeasurementJobScheduler.stop(List.of()); // TODO 
 		} catch (SchedulerException ex) {
-			logger.error("Error while terminating device collection job scheduling");
+			logger.error("Error while terminating jobs scheduling");
 			logger.debug(ex);
 		}
 	}

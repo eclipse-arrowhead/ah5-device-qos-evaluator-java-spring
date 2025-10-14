@@ -20,36 +20,34 @@ package eu.arrowhead.deviceqosevaluator.quartz;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.quartz.DisallowConcurrentExecution;
-import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.scheduling.quartz.QuartzJobBean;
 
 import eu.arrowhead.deviceqosevaluator.engine.DeviceCollectorEngine;
 
-@Component
 @DisallowConcurrentExecution
-public class DeviceCollectorJob implements Job {
-	
+public class DeviceCollectorJob extends QuartzJobBean {
+
 	//=================================================================================================
 	// members
-	
+
 	@Autowired
 	private DeviceCollectorEngine deviceCollectorEngine;
 
 	private final Logger logger = LogManager.getLogger(this.getClass());
-	
+
 	//=================================================================================================
 	// methods
-	
+
 	//-------------------------------------------------------------------------------------------------
 	@Override
-	public void execute(final JobExecutionContext context) throws JobExecutionException {
+	protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
 		logger.debug("DeviceCollectorJob.execute started");
-		
+
 		try {
-			deviceCollectorEngine.refresh();			
+			deviceCollectorEngine.refresh();
 		} catch (final Exception ex) {
 			logger.error("Device collecting job failure");
 			logger.error(ex.getMessage());

@@ -14,36 +14,38 @@
  *  	Arrowhead Consortia - conceptualization
  *
  *******************************************************************************/
-
 package eu.arrowhead.deviceqosevaluator.quartz;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.quartz.JobDetailFactoryBean;
+import java.util.UUID;
 
-import eu.arrowhead.deviceqosevaluator.DeviceQoSEvaluatorConstants;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+import org.springframework.scheduling.quartz.QuartzJobBean;
 
-@Configuration
-public class DeviceCollectorJobConfig {
+public class AugmentedMeasurementJob extends QuartzJobBean {
 
 	//=================================================================================================
 	// members
 
-	@Value(DeviceQoSEvaluatorConstants.$DEVICE_COLLECTOR_JOB_INTERVAL_WD)
-	private long interval;
-	
+	private UUID deviceId;
+
+	private final Logger logger = LogManager.getLogger(this.getClass());
+
 	//=================================================================================================
 	// methods
 
 	//-------------------------------------------------------------------------------------------------
-	@Bean(DeviceQoSEvaluatorConstants.DEVICE_COLLECTOR_JOB)
-	JobDetailFactoryBean deviceCollectorJobDetail() {
-		final JobDetailFactoryBean jobDetailFactory = new JobDetailFactoryBean();
-		jobDetailFactory.setJobClass(DeviceCollectorJob.class);
-		jobDetailFactory.setDescription("Refeshing the device table");
-		jobDetailFactory.setDurability(true);
+	@Override
+	protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
+		logger.debug("AugmentedMeasurementJob.execute started");
 
-		return jobDetailFactory;
+		System.out.println("Augmented measurement execute: " + deviceId);
+	}
+
+	//-------------------------------------------------------------------------------------------------
+	public void setDeviceId(final UUID deviceId) {
+		this.deviceId = deviceId;
 	}
 }
