@@ -35,7 +35,7 @@ public class System extends ArrowheadEntity {
 	private String name;
 
 	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "deviceId", referencedColumnName = "id", nullable = false)
+	@JoinColumn(name = "deviceId", referencedColumnName = "id", nullable = true)
 	private Device device;
 
 	//=================================================================================================
