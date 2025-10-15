@@ -29,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import eu.arrowhead.deviceqosevaluator.jpa.repository.DeviceRepository;
 import eu.arrowhead.deviceqosevaluator.jpa.repository.SystemRepository;
+import eu.arrowhead.common.exception.ArrowheadException;
 import eu.arrowhead.common.exception.InternalServerError;
 import eu.arrowhead.deviceqosevaluator.jpa.entity.Device;
 import eu.arrowhead.deviceqosevaluator.jpa.entity.System;
@@ -51,7 +52,7 @@ public class SystemDbService {
 	// methods
 	
 	//-------------------------------------------------------------------------------------------------
-	@Transactional
+	@Transactional(rollbackFor = ArrowheadException.class)
 	public void save(final Iterable<System> systems) {
 		logger.debug("save started");
 		
@@ -96,12 +97,13 @@ public class SystemDbService {
 	}
 	
 	//-------------------------------------------------------------------------------------------------
-	@Transactional
+	@Transactional(rollbackFor = ArrowheadException.class)
 	public void deleteSystemsWithoutDevice() {
 		logger.debug("deleteSystemsWithoutDevice started");
 		
 		try {
-			systemRepo.deleteAllByDeviceIsNull();				
+			systemRepo.deleteAllByDeviceIsNull();
+			systemRepo.flush();
 		} catch (final Exception ex) {
 			logger.error(ex.getMessage());
 			logger.debug(ex);

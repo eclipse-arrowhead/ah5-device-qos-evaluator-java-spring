@@ -33,6 +33,7 @@ import eu.arrowhead.deviceqosevaluator.DeviceQoSEvaluatorSystemInfo;
 import eu.arrowhead.deviceqosevaluator.quartz.scheduler.AugmentedMeasurementJobScheduler;
 import eu.arrowhead.deviceqosevaluator.quartz.scheduler.CleaningJobScheduler;
 import eu.arrowhead.deviceqosevaluator.quartz.scheduler.MeasurementOrganizerJobScheduler;
+import eu.arrowhead.deviceqosevaluator.quartz.scheduler.RttMeasurementJobScheduler;
 
 @Component
 public class DeviceQoSEvaluatorApplicationInitListener extends ApplicationInitListener {
@@ -47,7 +48,7 @@ public class DeviceQoSEvaluatorApplicationInitListener extends ApplicationInitLi
 	private MeasurementOrganizerJobScheduler measurementOrganizerJobScheduler;
 	
 	@Autowired
-	private AugmentedMeasurementJobScheduler rttMeasurementJobScheduler;
+	private RttMeasurementJobScheduler rttMeasurementJobScheduler;
 
 	@Autowired
 	private AugmentedMeasurementJobScheduler augmentedMeasurementJobScheduler;
