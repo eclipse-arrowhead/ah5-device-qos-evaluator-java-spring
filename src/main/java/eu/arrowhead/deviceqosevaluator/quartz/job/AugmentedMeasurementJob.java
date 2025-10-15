@@ -16,7 +16,9 @@
  *******************************************************************************/
 package eu.arrowhead.deviceqosevaluator.quartz.job;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.UUID;
@@ -30,10 +32,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.util.Assert;
 
+import eu.arrowhead.common.Utilities;
 import eu.arrowhead.deviceqosevaluator.driver.AugmentedMeasurementDriver;
 import eu.arrowhead.deviceqosevaluator.dto.AugmentedMeasurementsDTO;
+import eu.arrowhead.deviceqosevaluator.enums.OID;
 import eu.arrowhead.deviceqosevaluator.jpa.entity.Device;
 import eu.arrowhead.deviceqosevaluator.jpa.service.DeviceDbService;
+import eu.arrowhead.deviceqosevaluator.util.Stat;
 
 public class AugmentedMeasurementJob extends QuartzJobBean {
 
@@ -83,8 +88,9 @@ public class AugmentedMeasurementJob extends QuartzJobBean {
 			}
 
 			final AugmentedMeasurementsDTO response = measurementDriver.fetch(device.getAddress());
+			final Map<OID, List<Double>> aggregated = aggregate(response);
 
-			for (Entry<String, List<Double>> entry : response.entrySet()) {
+			for (Entry<OID, List<Double>> entry : aggregated.entrySet()) {
 				System.out.println(entry.getKey() + ": " + entry.getValue().stream().map(String::valueOf).collect(Collectors.joining(",")));
 			}
 
@@ -98,5 +104,19 @@ public class AugmentedMeasurementJob extends QuartzJobBean {
 	// assistant methods
 
 	//-------------------------------------------------------------------------------------------------
+	private Map<OID, List<Double>> aggregate(final AugmentedMeasurementsDTO values) {
+		logger.debug("AugmentedMeasurementJob.aggregate started");
 
+		final Map<OID, List<Double>> results = new HashMap<>();
+
+		for (final OID oid : OID.values()) {
+			if (values.containsKey(oid.getValue()) && !Utilities.isEmpty(values.get(oid.getValue()))) {
+				final double[] array = values.get(oid.getValue()).stream().mapToDouble(Double::doubleValue).toArray();
+				final List<Double> aggregated = List.of(Stat.min(array), Stat.max(array), Stat.mean(array), Stat.median(array));
+				results.put(oid, aggregated);
+			}
+		}
+
+		return results;
+	}
 }
