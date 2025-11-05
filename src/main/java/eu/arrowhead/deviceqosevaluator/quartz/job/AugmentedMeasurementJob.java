@@ -35,7 +35,7 @@ import org.springframework.util.Assert;
 import eu.arrowhead.common.Utilities;
 import eu.arrowhead.deviceqosevaluator.driver.AugmentedMeasurementDriver;
 import eu.arrowhead.deviceqosevaluator.dto.AugmentedMeasurementsDTO;
-import eu.arrowhead.deviceqosevaluator.enums.OID;
+import eu.arrowhead.deviceqosevaluator.enums.OidGroup;
 import eu.arrowhead.deviceqosevaluator.jpa.entity.Device;
 import eu.arrowhead.deviceqosevaluator.jpa.service.DeviceDbService;
 import eu.arrowhead.deviceqosevaluator.jpa.service.StatDbService;
@@ -92,9 +92,9 @@ public class AugmentedMeasurementJob extends QuartzJobBean {
 
 			final AugmentedMeasurementsDTO response = measurementDriver.fetch(device.getAddress());
 			final ZonedDateTime timestamp = Utilities.utcNow();
-			final Map<OID, List<Double>> aggregated = aggregate(response);
+			final Map<OidGroup, List<Double>> aggregated = aggregate(response);
 
-			for (final Entry<OID, List<Double>> entry : aggregated.entrySet()) {
+			for (final Entry<OidGroup, List<Double>> entry : aggregated.entrySet()) {
 				statDbService.save(timestamp, entry.getKey(), deviceId, entry.getValue());
 			}
 
@@ -108,16 +108,16 @@ public class AugmentedMeasurementJob extends QuartzJobBean {
 	// assistant methods
 
 	//-------------------------------------------------------------------------------------------------
-	private Map<OID, List<Double>> aggregate(final AugmentedMeasurementsDTO values) {
+	private Map<OidGroup, List<Double>> aggregate(final AugmentedMeasurementsDTO values) {
 		logger.debug("AugmentedMeasurementJob.aggregate started");
 
-		final Map<OID, List<Double>> results = new HashMap<>();
+		final Map<OidGroup, List<Double>> results = new HashMap<>();
 
-		for (final OID oid : OID.values()) {
-			if (values.containsKey(oid.getValue()) && !Utilities.isEmpty(values.get(oid.getValue()))) {
-				final double[] array = values.get(oid.getValue()).stream().mapToDouble(Double::doubleValue).toArray();
-				final List<Double> aggregated = List.of(Stat.min(array), Stat.max(array), Stat.mean(array), Stat.median(array));
-				results.put(oid, aggregated);
+		for (final OidGroup oidGroup : OidGroup.values()) {
+			if (values.containsKey(oidGroup.getValue()) && !Utilities.isEmpty(values.get(oidGroup.getValue()))) {
+				final double[] array = values.get(oidGroup.getValue()).stream().mapToDouble(Double::doubleValue).toArray();
+				final List<Double> aggregated = List.of(Stat.min(array), Stat.max(array), Stat.mean(array), Stat.median(array), array[array.length - 1]);
+				results.put(oidGroup, aggregated);
 			}
 		}
 

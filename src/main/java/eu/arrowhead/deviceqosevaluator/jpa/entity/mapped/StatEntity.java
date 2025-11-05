@@ -53,6 +53,9 @@ public abstract class StatEntity {
 	@Column(nullable = false)
 	protected double median;
 
+	@Column(nullable = false)
+	protected double current;
+	
 	//=================================================================================================
 	// methods
 
@@ -61,13 +64,14 @@ public abstract class StatEntity {
 	}
 
 	//-------------------------------------------------------------------------------------------------
-	public StatEntity(final UUID uuid, final ZonedDateTime timestamp, final double minimum, final double maximum, final double mean, final double median) {
+	public StatEntity(final UUID uuid, final ZonedDateTime timestamp, final double minimum, final double maximum, final double mean, final double median, final double current) {
 		this.uuid = uuid;
 		this.timestamp = timestamp;
 		this.minimum = minimum;
 		this.maximum = maximum;
 		this.mean = mean;
 		this.median = median;
+		this.current = current;
 	}
 
 	//=================================================================================================
@@ -141,6 +145,16 @@ public abstract class StatEntity {
 	//-------------------------------------------------------------------------------------------------
 	public void setMedian(final double median) {
 		this.median = median;
+	}
+
+	//-------------------------------------------------------------------------------------------------
+	public double getCurrent() {
+		return current;
+	}
+
+	//-------------------------------------------------------------------------------------------------
+	public void setCurrent(final double current) {
+		this.current = current;
 	}
 
 }

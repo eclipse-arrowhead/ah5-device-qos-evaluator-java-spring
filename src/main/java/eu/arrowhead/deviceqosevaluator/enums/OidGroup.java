@@ -14,26 +14,34 @@
  *  	Arrowhead Consortia - conceptualization
  *
  *******************************************************************************/
-package eu.arrowhead.deviceqosevaluator.jpa.entity;
+package eu.arrowhead.deviceqosevaluator.enums;
 
-import java.time.ZonedDateTime;
-import java.util.UUID;
+public enum OidGroup {
 
-import eu.arrowhead.deviceqosevaluator.jpa.entity.mapped.StatEntity;
-import jakarta.persistence.Entity;
-
-@Entity
-public class StatMemoryUsed extends StatEntity {
+	//=================================================================================================
+	// members
+	
+	RTT("0.0", 30000), CPU_TOTAL_LOAD("1.4", 100d), MEMORY_USED("2.1", 100d);
+	
+	private final String value;
+	private final double worstStat;
 
 	//=================================================================================================
 	// methods
-
+	
 	//-------------------------------------------------------------------------------------------------
-	public StatMemoryUsed() {
+	private OidGroup(final String value, final double worstStat) {
+		this.value = value;
+		this.worstStat = worstStat;
 	}
 
 	//-------------------------------------------------------------------------------------------------
-	public StatMemoryUsed(final UUID uuid, final ZonedDateTime timestamp, final double minimum, final double maximum, final double mean, final double median, final double current) {
-		super(uuid, timestamp, minimum, maximum, mean, median, current);
+	public String getValue() {
+		return value;
+	}
+
+	//-------------------------------------------------------------------------------------------------
+	public double getWorstStat() {
+		return worstStat;
 	}
 }

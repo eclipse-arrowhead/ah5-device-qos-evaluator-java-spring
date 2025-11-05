@@ -18,7 +18,6 @@ package eu.arrowhead.deviceqosevaluator.jpa.service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import org.apache.logging.log4j.LogManager;
@@ -27,12 +26,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import eu.arrowhead.deviceqosevaluator.jpa.repository.DeviceRepository;
-import eu.arrowhead.deviceqosevaluator.jpa.repository.SystemRepository;
 import eu.arrowhead.common.exception.ArrowheadException;
 import eu.arrowhead.common.exception.InternalServerError;
 import eu.arrowhead.deviceqosevaluator.jpa.entity.Device;
 import eu.arrowhead.deviceqosevaluator.jpa.entity.System;
+import eu.arrowhead.deviceqosevaluator.jpa.repository.DeviceRepository;
+import eu.arrowhead.deviceqosevaluator.jpa.repository.SystemRepository;
 
 @Service
 public class SystemDbService {
@@ -66,7 +65,7 @@ public class SystemDbService {
 	}
 	
 	//-------------------------------------------------------------------------------------------------
-	public List<System> findByNames(final Set<String> names) {
+	public List<System> findByNames(final Iterable<String> names) {
 		logger.debug("findByNames started");
 	
 		try {

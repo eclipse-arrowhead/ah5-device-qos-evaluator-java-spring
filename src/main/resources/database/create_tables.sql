@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS `stat_round_trip_time` (
   `maximum` double NOT NULL,
   `mean` double NOT NULL,
   `median` double NOT NULL,
+  `current` double NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -62,6 +63,7 @@ CREATE TABLE IF NOT EXISTS `stat_cpu_total_load` (
   `maximum` double NOT NULL,
   `mean` double NOT NULL,
   `median` double NOT NULL,
+  `current` double NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -75,5 +77,6 @@ CREATE TABLE IF NOT EXISTS `stat_memory_used` (
   `maximum` double NOT NULL,
   `mean` double NOT NULL,
   `median` double NOT NULL,
+  `current` double NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

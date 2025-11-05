@@ -29,7 +29,7 @@ import org.apache.logging.log4j.Logger;
 import eu.arrowhead.common.Constants;
 import eu.arrowhead.common.Utilities;
 import eu.arrowhead.common.service.validation.meta.MetadataKeyEvaluator;
-import eu.arrowhead.deviceqosevaluator.enums.OID;
+import eu.arrowhead.deviceqosevaluator.enums.OidGroup;
 import eu.arrowhead.dto.AddressDTO;
 import eu.arrowhead.dto.SystemResponseDTO;
 import eu.arrowhead.dto.enums.AddressType;
@@ -145,8 +145,8 @@ public class SystemDeviceMap {
 			try {
 				final List<String> list = (List<String>) object;
 				for (final String item : list) {
-					for (final OID oid : OID.values()) {
-						if (item.equals(oid.getValue())) {
+					for (final OidGroup oidGroup : OidGroup.values()) {
+						if (item.equals(oidGroup.getValue())) {
 							return true;
 						}
 					}

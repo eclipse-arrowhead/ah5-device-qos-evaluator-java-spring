@@ -33,7 +33,7 @@ public class StatCpuTotalLoad extends StatEntity {
 	}
 
 	//-------------------------------------------------------------------------------------------------
-	public StatCpuTotalLoad(final UUID uuid, final ZonedDateTime timestamp, final double minimum, final double maximum, final double mean, final double median) {
-		super(uuid, timestamp, minimum, maximum, mean, median);
+	public StatCpuTotalLoad(final UUID uuid, final ZonedDateTime timestamp, final double minimum, final double maximum, final double mean, final double median, final double current) {
+		super(uuid, timestamp, minimum, maximum, mean, median, current);
 	}
 }

@@ -35,6 +35,8 @@ public class DeviceQoSEvaluatorConstants {
 	public static final String AUGMENTED_MEASUREMENT_JOB_INTERVAL = "augmented.measurement.job.interval";
 	public static final String $AUGMENTED_MEASUREMENT_JOB_INTERVAL_WD = "${" + AUGMENTED_MEASUREMENT_JOB_INTERVAL + ":" + DeviceQoSEvaluatorDefaults.AUGMENTED_MEASUEREMENT_JOB_INTERVAL_DEFAULT + "}";
 	public static final int AUGMENTED_MEASUREMENT_JOB_INTERVAL_MIN_VALUE = 5; // sec
+	public static final String EVALUATION_TIME_WINDOW = "evaluation.time.window";
+	public static final String $EVALUATION_TIME_WINDOW_WD = "${" + EVALUATION_TIME_WINDOW + ":" + DeviceQoSEvaluatorDefaults.EVALUATION_TIME_WINDOW_DEFAULT + "}";
 	public static final String CLEANING_JOB_INTERVAL = "cleaning.job.interval";
 	public static final String $CLEANING_JOB_INTERVAL_WD = "${" + CLEANING_JOB_INTERVAL + ":" + DeviceQoSEvaluatorDefaults.CLEANING_JOB_INTERVAL_DEFAULT + "}";
 	public static final int CLEANING_JOB_INTERVAL_MIN_VALUE = 60; // sec

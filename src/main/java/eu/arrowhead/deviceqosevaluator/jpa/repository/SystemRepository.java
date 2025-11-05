@@ -17,7 +17,6 @@
 package eu.arrowhead.deviceqosevaluator.jpa.repository;
 
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.stereotype.Repository;
 
@@ -32,7 +31,7 @@ public interface SystemRepository extends RefreshableRepository<System, Long> {
 	// methods
 	
 	//-------------------------------------------------------------------------------------------------
-	public List<System> findAllByNameIn(final Set<String> names);
+	public List<System> findAllByNameIn(final Iterable<String> names);
 
 	//-------------------------------------------------------------------------------------------------
 	public List<System> findAllByDevice(final Device device);

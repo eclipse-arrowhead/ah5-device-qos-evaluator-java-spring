@@ -16,12 +16,12 @@
  *******************************************************************************/
 package eu.arrowhead.deviceqosevaluator.enums;
 
-public enum OID {
+public enum OidMetric {
 
 	//=================================================================================================
 	// members
 	
-	RTT("0.0"), CPU_TOTAL_LOAD("1.4"), MEMORY_USED("2.1");
+	MIN("1"), MAX("2"), MEAN("3"), MEDIAN("4"), CURRENT("5");
 	
 	private String value;
 
@@ -29,7 +29,7 @@ public enum OID {
 	// methods
 	
 	//-------------------------------------------------------------------------------------------------
-	private OID(String value) {
+	private OidMetric(String value) {
 		this.value = value;
 	}
 

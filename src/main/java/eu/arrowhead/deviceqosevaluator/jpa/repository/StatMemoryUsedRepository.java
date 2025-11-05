@@ -16,6 +16,7 @@
  *******************************************************************************/
 package eu.arrowhead.deviceqosevaluator.jpa.repository;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,5 +32,5 @@ public interface StatMemoryUsedRepository extends RefreshableRepository<StatMemo
 	// methods
 
 	//-------------------------------------------------------------------------------------------------
-	public List<StatMemoryUsed> findAllByUuid(final UUID uuid);
+	public List<StatMemoryUsed> findAllByUuidAndTimestampAfter(final UUID uuid, final ZonedDateTime timestamp);
 }
