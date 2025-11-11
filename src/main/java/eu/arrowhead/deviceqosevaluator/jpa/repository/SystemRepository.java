@@ -17,6 +17,7 @@
 package eu.arrowhead.deviceqosevaluator.jpa.repository;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Repository;
 
@@ -35,6 +36,9 @@ public interface SystemRepository extends RefreshableRepository<System, Long> {
 
 	//-------------------------------------------------------------------------------------------------
 	public List<System> findAllByDevice(final Device device);
+	
+	//-------------------------------------------------------------------------------------------------
+	public List<System> findAllByDevice_Id(final UUID deviceId);
 	
 	//-------------------------------------------------------------------------------------------------
 	public List<System> findAllByDeviceIsNull();

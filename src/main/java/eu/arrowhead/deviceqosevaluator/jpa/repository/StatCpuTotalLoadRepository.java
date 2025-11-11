@@ -17,9 +17,13 @@
 package eu.arrowhead.deviceqosevaluator.jpa.repository;
 
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import eu.arrowhead.common.jpa.RefreshableRepository;
@@ -32,5 +36,14 @@ public interface StatCpuTotalLoadRepository extends RefreshableRepository<StatCp
 	// methods
 
 	//-------------------------------------------------------------------------------------------------
+	public Page<StatCpuTotalLoad> findAllByIdIn(final Collection<Long> ids, final Pageable pageable);
+
+	//-------------------------------------------------------------------------------------------------
 	public List<StatCpuTotalLoad> findAllByUuidAndTimestampAfter(final UUID uuid, final ZonedDateTime timestamp);
+	
+	//-------------------------------------------------------------------------------------------------
+	public List<StatCpuTotalLoad> findAllByTimestampBetween(final ZonedDateTime start, final ZonedDateTime end);
+	
+	//-------------------------------------------------------------------------------------------------
+	public List<StatCpuTotalLoad> findAllByUuidInAndTimestampBetween(final Set<UUID> uuids, final ZonedDateTime start, final ZonedDateTime end);
 }

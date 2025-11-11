@@ -18,12 +18,21 @@ package eu.arrowhead.deviceqosevaluator.jpa.service;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -35,17 +44,20 @@ import eu.arrowhead.deviceqosevaluator.enums.OidGroup;
 import eu.arrowhead.deviceqosevaluator.jpa.entity.StatCpuTotalLoad;
 import eu.arrowhead.deviceqosevaluator.jpa.entity.StatMemoryUsed;
 import eu.arrowhead.deviceqosevaluator.jpa.entity.StatRoundTripTime;
+import eu.arrowhead.deviceqosevaluator.jpa.entity.System;
 import eu.arrowhead.deviceqosevaluator.jpa.entity.mapped.StatEntity;
 import eu.arrowhead.deviceqosevaluator.jpa.repository.StatCpuTotalLoadRepository;
 import eu.arrowhead.deviceqosevaluator.jpa.repository.StatMemoryUsedRepository;
 import eu.arrowhead.deviceqosevaluator.jpa.repository.StatRoundTripTimeRepository;
+import eu.arrowhead.deviceqosevaluator.jpa.repository.SystemRepository;
+import eu.arrowhead.deviceqosevaluator.jpa.service.model.StatQueryResultModel;
 
 @Service
 public class StatDbService {
 
 	//=================================================================================================
 	// members
-	
+
 	@Autowired
 	private StatRoundTripTimeRepository rttStatRepo;
 
@@ -54,6 +66,9 @@ public class StatDbService {
 
 	@Autowired
 	private StatMemoryUsedRepository memoryStatRepo;
+
+	@Autowired
+	private SystemRepository systemRepo;
 
 	private final Logger logger = LogManager.getLogger(this.getClass());
 
@@ -90,13 +105,13 @@ public class StatDbService {
 			throw new InternalServerError("Database operation error");
 		}
 	}
-	
+
 	//-------------------------------------------------------------------------------------------------
 	public List<StatEntity> getByDeviceIdUntilTimestamp(final OidGroup oidGroup, final UUID deviceId, final ZonedDateTime timestamp) {
 		logger.debug("getByDeviceId started");
 		Assert.notNull(oidGroup, "oidGroup is null");
 		Assert.notNull(deviceId, "deviceId is null");
-		
+
 		final List<StatEntity> result = new ArrayList<>();
 		try {
 			switch (oidGroup) {
@@ -110,14 +125,117 @@ public class StatDbService {
 				result.addAll(memoryStatRepo.findAllByUuidAndTimestampAfter(deviceId, timestamp));
 				break;
 			}
-			
+
 			return result;
-			
+
 		} catch (final Exception ex) {
 			logger.error(ex.getMessage());
 			logger.debug(ex);
 			throw new InternalServerError("Database operation error");
 		}
 	}
-	
+
+	//-------------------------------------------------------------------------------------------------
+	public Page<StatQueryResultModel> query(final Set<String> systemNames, final ZonedDateTime from, final ZonedDateTime to, final OidGroup oidGroup, final PageRequest pagination) {
+		logger.debug("query started");
+		Assert.notNull(oidGroup, "oidGroup is null");
+		Assert.notNull(pagination, "pagination is null");
+
+		try {
+			final ZonedDateTime start = from == null ? Utilities.utcNow().minusYears(1) : from;
+			final ZonedDateTime end = to == null ? Utilities.utcNow().plusMinutes(1) : from;
+
+			Set<UUID> devices = new HashSet<>();
+			if (!Utilities.isEmpty(systemNames)) {
+				devices = systemRepo.findAllByNameIn(systemNames).stream().map(sys -> sys.getDevice().getId()).collect(Collectors.toSet());
+			}
+
+			final List<StatEntity> records = new ArrayList<>();
+			Pageable pageable = null;
+			long total = 0;
+			switch (oidGroup) {
+			case RTT:
+				final Page<StatRoundTripTime> rttStatPage = queryRTT(devices, start, end, pagination);
+				records.addAll(rttStatPage.getContent());
+				pageable = rttStatPage.getPageable();
+				total = rttStatPage.getTotalElements();
+				break;
+
+			case CPU_TOTAL_LOAD:
+				final Page<StatCpuTotalLoad> cpuStatPage = queryCpuTotalLoad(devices, start, end, pagination);
+				records.addAll(cpuStatPage.getContent());
+				pageable = cpuStatPage.getPageable();
+				total = cpuStatPage.getTotalElements();
+				break;
+
+			case MEMORY_USED:
+				final Page<StatMemoryUsed> memoryStatPage = queryMemoryUsed(devices, start, end, pagination);
+				records.addAll(memoryStatPage.getContent());
+				pageable = memoryStatPage.getPageable();
+				total = memoryStatPage.getTotalElements();
+				break;
+			}
+
+			final Map<UUID, List<System>> deviceSysCache = new HashMap<>();
+			final List<StatQueryResultModel> results = new ArrayList<>();
+			for (final StatEntity stat : records) {
+				if (!deviceSysCache.containsKey(stat.getUuid())) {
+					deviceSysCache.put(stat.getUuid(), systemRepo.findAllByDevice_Id(stat.getUuid()));
+				}
+				results.add(new StatQueryResultModel(oidGroup, stat, deviceSysCache.get(stat.getUuid())));
+			}
+
+			return new PageImpl<StatQueryResultModel>(results, pageable, total);
+
+		} catch (final Exception ex) {
+			logger.error(ex.getMessage());
+			logger.debug(ex);
+			throw new InternalServerError("Database operation error");
+		}
+	}
+
+	//=================================================================================================
+	// assistant methods
+
+	//-------------------------------------------------------------------------------------------------
+	private Page<StatRoundTripTime> queryRTT(final Set<UUID> devices, final ZonedDateTime start, final ZonedDateTime end, final PageRequest pagination) {
+		logger.debug("queryRTT started");
+
+		List<Long> list;
+		if (Utilities.isEmpty(devices)) {
+			list = rttStatRepo.findAllByTimestampBetween(start, end).stream().map(r -> r.getId()).toList();
+		} else {
+			list = rttStatRepo.findAllByUuidInAndTimestampBetween(devices, start, end).stream().map(r -> r.getId()).toList();
+		}
+
+		return rttStatRepo.findAllByIdIn(list, pagination);
+	}
+
+	//-------------------------------------------------------------------------------------------------
+	private Page<StatCpuTotalLoad> queryCpuTotalLoad(final Set<UUID> devices, final ZonedDateTime start, final ZonedDateTime end, final PageRequest pagination) {
+		logger.debug("queryCpuTotalLoad started");
+
+		List<Long> list;
+		if (Utilities.isEmpty(devices)) {
+			list = cpuStatRepo.findAllByTimestampBetween(start, end).stream().map(r -> r.getId()).toList();
+		} else {
+			list = cpuStatRepo.findAllByUuidInAndTimestampBetween(devices, start, end).stream().map(r -> r.getId()).toList();
+		}
+
+		return cpuStatRepo.findAllByIdIn(list, pagination);
+	}
+
+	//-------------------------------------------------------------------------------------------------
+	private Page<StatMemoryUsed> queryMemoryUsed(final Set<UUID> devices, final ZonedDateTime start, final ZonedDateTime end, final PageRequest pagination) {
+		logger.debug("queryMemoryUsed started");
+
+		List<Long> list;
+		if (Utilities.isEmpty(devices)) {
+			list = memoryStatRepo.findAllByTimestampBetween(start, end).stream().map(r -> r.getId()).toList();
+		} else {
+			list = memoryStatRepo.findAllByUuidInAndTimestampBetween(devices, start, end).stream().map(r -> r.getId()).toList();
+		}
+
+		return memoryStatRepo.findAllByIdIn(list, pagination);
+	}
 }
