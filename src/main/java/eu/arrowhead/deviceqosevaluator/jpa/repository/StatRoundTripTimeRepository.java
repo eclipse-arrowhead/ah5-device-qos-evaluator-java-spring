@@ -42,8 +42,8 @@ public interface StatRoundTripTimeRepository extends RefreshableRepository<StatR
 	public List<StatRoundTripTime> findAllByUuidAndTimestampAfter(final UUID uuid, final ZonedDateTime timestamp);
 
 	//-------------------------------------------------------------------------------------------------
-	public List<StatRoundTripTime> findAllByTimestampBetween(final ZonedDateTime start, final ZonedDateTime end);
+	public Page<StatRoundTripTime> findAllByTimestampBetween(final ZonedDateTime start, final ZonedDateTime end, final Pageable pageable);
 
 	//-------------------------------------------------------------------------------------------------
-	public List<StatRoundTripTime> findAllByUuidInAndTimestampBetween(final Set<UUID> uuids, final ZonedDateTime start, final ZonedDateTime end);
+	public Page<StatRoundTripTime> findAllByUuidInAndTimestampBetween(final Set<UUID> uuids, final ZonedDateTime start, final ZonedDateTime end, final Pageable pageable);
 }

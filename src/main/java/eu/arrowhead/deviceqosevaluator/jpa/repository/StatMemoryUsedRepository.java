@@ -42,8 +42,8 @@ public interface StatMemoryUsedRepository extends RefreshableRepository<StatMemo
 	public List<StatMemoryUsed> findAllByUuidAndTimestampAfter(final UUID uuid, final ZonedDateTime timestamp);
 
 	//-------------------------------------------------------------------------------------------------
-	public List<StatMemoryUsed> findAllByTimestampBetween(final ZonedDateTime start, final ZonedDateTime end);
+	public Page<StatMemoryUsed> findAllByTimestampBetween(final ZonedDateTime start, final ZonedDateTime end, final Pageable pageable);
 
 	//-------------------------------------------------------------------------------------------------
-	public List<StatMemoryUsed> findAllByUuidInAndTimestampBetween(final Set<UUID> uuids, final ZonedDateTime start, final ZonedDateTime end);
+	public Page<StatMemoryUsed> findAllByUuidInAndTimestampBetween(final Set<UUID> uuids, final ZonedDateTime start, final ZonedDateTime end, final Pageable pageable);
 }

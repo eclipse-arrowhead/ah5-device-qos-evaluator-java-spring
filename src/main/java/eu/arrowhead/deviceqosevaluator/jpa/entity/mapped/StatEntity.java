@@ -17,6 +17,7 @@
 package eu.arrowhead.deviceqosevaluator.jpa.entity.mapped;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -30,6 +31,9 @@ public abstract class StatEntity {
 
 	//=================================================================================================
 	// members
+	
+	public static final List<String> SORTABLE_FIELDS_BY = List.of("id", "timestamp");
+	public static final String DEFAULT_SORT_FIELD = "timestamp";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

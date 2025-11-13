@@ -42,8 +42,8 @@ public interface StatCpuTotalLoadRepository extends RefreshableRepository<StatCp
 	public List<StatCpuTotalLoad> findAllByUuidAndTimestampAfter(final UUID uuid, final ZonedDateTime timestamp);
 	
 	//-------------------------------------------------------------------------------------------------
-	public List<StatCpuTotalLoad> findAllByTimestampBetween(final ZonedDateTime start, final ZonedDateTime end);
+	public Page<StatCpuTotalLoad> findAllByTimestampBetween(final ZonedDateTime start, final ZonedDateTime end, final Pageable pageable);
 	
 	//-------------------------------------------------------------------------------------------------
-	public List<StatCpuTotalLoad> findAllByUuidInAndTimestampBetween(final Set<UUID> uuids, final ZonedDateTime start, final ZonedDateTime end);
+	public Page<StatCpuTotalLoad> findAllByUuidInAndTimestampBetween(final Set<UUID> uuids, final ZonedDateTime start, final ZonedDateTime end, final Pageable pageable);
 }

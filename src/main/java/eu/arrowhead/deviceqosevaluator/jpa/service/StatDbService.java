@@ -18,6 +18,7 @@ package eu.arrowhead.deviceqosevaluator.jpa.service;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -136,7 +137,7 @@ public class StatDbService {
 	}
 
 	//-------------------------------------------------------------------------------------------------
-	public Page<StatQueryResultModel> query(final Set<String> systemNames, final ZonedDateTime from, final ZonedDateTime to, final OidGroup oidGroup, final PageRequest pagination) {
+	public Page<StatQueryResultModel> query(final Collection<String> systemNames, final ZonedDateTime from, final ZonedDateTime to, final OidGroup oidGroup, final PageRequest pagination) {
 		logger.debug("query started");
 		Assert.notNull(oidGroup, "oidGroup is null");
 		Assert.notNull(pagination, "pagination is null");
@@ -201,41 +202,29 @@ public class StatDbService {
 	private Page<StatRoundTripTime> queryRTT(final Set<UUID> devices, final ZonedDateTime start, final ZonedDateTime end, final PageRequest pagination) {
 		logger.debug("queryRTT started");
 
-		List<Long> list;
 		if (Utilities.isEmpty(devices)) {
-			list = rttStatRepo.findAllByTimestampBetween(start, end).stream().map(r -> r.getId()).toList();
-		} else {
-			list = rttStatRepo.findAllByUuidInAndTimestampBetween(devices, start, end).stream().map(r -> r.getId()).toList();
+			return rttStatRepo.findAllByTimestampBetween(start, end, pagination);
 		}
-
-		return rttStatRepo.findAllByIdIn(list, pagination);
+		return rttStatRepo.findAllByUuidInAndTimestampBetween(devices, start, end, pagination);
 	}
 
 	//-------------------------------------------------------------------------------------------------
 	private Page<StatCpuTotalLoad> queryCpuTotalLoad(final Set<UUID> devices, final ZonedDateTime start, final ZonedDateTime end, final PageRequest pagination) {
 		logger.debug("queryCpuTotalLoad started");
 
-		List<Long> list;
 		if (Utilities.isEmpty(devices)) {
-			list = cpuStatRepo.findAllByTimestampBetween(start, end).stream().map(r -> r.getId()).toList();
-		} else {
-			list = cpuStatRepo.findAllByUuidInAndTimestampBetween(devices, start, end).stream().map(r -> r.getId()).toList();
+			return cpuStatRepo.findAllByTimestampBetween(start, end, pagination);
 		}
-
-		return cpuStatRepo.findAllByIdIn(list, pagination);
+		return cpuStatRepo.findAllByUuidInAndTimestampBetween(devices, start, end, pagination);
 	}
 
 	//-------------------------------------------------------------------------------------------------
 	private Page<StatMemoryUsed> queryMemoryUsed(final Set<UUID> devices, final ZonedDateTime start, final ZonedDateTime end, final PageRequest pagination) {
 		logger.debug("queryMemoryUsed started");
 
-		List<Long> list;
 		if (Utilities.isEmpty(devices)) {
-			list = memoryStatRepo.findAllByTimestampBetween(start, end).stream().map(r -> r.getId()).toList();
-		} else {
-			list = memoryStatRepo.findAllByUuidInAndTimestampBetween(devices, start, end).stream().map(r -> r.getId()).toList();
+			return memoryStatRepo.findAllByTimestampBetween(start, end, pagination);
 		}
-
-		return memoryStatRepo.findAllByIdIn(list, pagination);
+		return memoryStatRepo.findAllByUuidInAndTimestampBetween(devices, start, end, pagination);
 	}
 }

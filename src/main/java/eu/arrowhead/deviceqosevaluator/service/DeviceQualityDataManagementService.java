@@ -20,11 +20,24 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
+import eu.arrowhead.common.Utilities;
 import eu.arrowhead.common.exception.ArrowheadException;
+import eu.arrowhead.common.service.PageService;
+import eu.arrowhead.deviceqosevaluator.dto.DTOConverter;
 import eu.arrowhead.deviceqosevaluator.engine.MeasurementEngine;
+import eu.arrowhead.deviceqosevaluator.enums.OidGroup;
+import eu.arrowhead.deviceqosevaluator.jpa.entity.mapped.StatEntity;
+import eu.arrowhead.deviceqosevaluator.jpa.service.StatDbService;
+import eu.arrowhead.deviceqosevaluator.jpa.service.model.StatQueryResultModel;
+import eu.arrowhead.deviceqosevaluator.service.validation.DeviceQualityDataManagementValidation;
+import eu.arrowhead.dto.QoSDeviceStatQueryRequestDTO;
+import eu.arrowhead.dto.QoSDeviceStatQueryResponseDTO;
 
 @Service
 public class DeviceQualityDataManagementService {
@@ -33,16 +46,40 @@ public class DeviceQualityDataManagementService {
 	// members
 
 	@Autowired
+	private StatDbService statDbService;
+
+	@Autowired
 	private MeasurementEngine measurementEngine;
-	
+
+	@Autowired
+	private PageService pageService;
+
+	@Autowired
+	private DeviceQualityDataManagementValidation validator;
+
+	@Autowired
+	private DTOConverter dtoConverter;
+
 	private final Logger logger = LogManager.getLogger(this.getClass());
 
 	//=================================================================================================
 	// methods
 
 	//-------------------------------------------------------------------------------------------------
-	public void query() {
-		// TODO
+	public QoSDeviceStatQueryResponseDTO query(final QoSDeviceStatQueryRequestDTO dto, final String origin) {
+		logger.debug("query started");
+
+		final QoSDeviceStatQueryRequestDTO normalized = validator.validateAndNormalizeQueryRequest(dto, origin);
+		final PageRequest pageRequest = pageService.getPageRequest(normalized.pagination(), Direction.DESC, StatEntity.SORTABLE_FIELDS_BY, StatEntity.DEFAULT_SORT_FIELD, origin);
+		
+		try {
+			final Page<StatQueryResultModel> results = statDbService.query(normalized.systemNames(), Utilities.parseUTCStringToZonedDateTime(normalized.from()), Utilities.parseUTCStringToZonedDateTime(normalized.to()),
+					OidGroup.valueOf(normalized.metricGroup()), pageRequest);
+			return dtoConverter.convertStatQueryResultModelPageToDTO(results);
+
+		} catch (final ArrowheadException ex) {
+			throw new ArrowheadException(ex.getMessage(), origin);
+		}
 	}
 
 	//-------------------------------------------------------------------------------------------------
@@ -54,7 +91,7 @@ public class DeviceQualityDataManagementService {
 			if (results == null) {
 				return "Reload operation is already in proggress";
 			}
-			return  results.getFirst() + " more systems found, " + results.getSecond() + " systems removed";
+			return results.getFirst() + " more systems found, " + results.getSecond() + " systems removed";
 		} catch (final ArrowheadException | SchedulerException ex) {
 			logger.error(ex.getMessage());
 			logger.debug(ex);
