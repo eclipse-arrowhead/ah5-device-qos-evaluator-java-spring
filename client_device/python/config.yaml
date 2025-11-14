@@ -1,8 +1,8 @@
 measurements:
-  cpu_total_load_1_4:
+  cpu_total_load:
     enabled: true
-  ram_used_2_1:
+  ram_used:
     enabled: true
-  network_throughput_3_2:
+  network_load:
     enabled: true
-    link_address: something
+    link_address: 192.168.0.105
