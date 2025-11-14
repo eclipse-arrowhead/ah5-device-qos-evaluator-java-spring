@@ -16,6 +16,8 @@
  *******************************************************************************/
 package eu.arrowhead.deviceqosevaluator.service;
 
+import java.util.stream.Collectors;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.quartz.SchedulerException;
@@ -32,6 +34,7 @@ import eu.arrowhead.common.service.PageService;
 import eu.arrowhead.deviceqosevaluator.dto.DTOConverter;
 import eu.arrowhead.deviceqosevaluator.engine.MeasurementEngine;
 import eu.arrowhead.deviceqosevaluator.enums.OidGroup;
+import eu.arrowhead.deviceqosevaluator.enums.OidMetric;
 import eu.arrowhead.deviceqosevaluator.jpa.entity.mapped.StatEntity;
 import eu.arrowhead.deviceqosevaluator.jpa.service.StatDbService;
 import eu.arrowhead.deviceqosevaluator.jpa.service.model.StatQueryResultModel;
@@ -75,7 +78,7 @@ public class DeviceQualityDataManagementService {
 		try {
 			final Page<StatQueryResultModel> results = statDbService.query(normalized.systemNames(), Utilities.parseUTCStringToZonedDateTime(normalized.from()), Utilities.parseUTCStringToZonedDateTime(normalized.to()),
 					OidGroup.valueOf(normalized.metricGroup()), pageRequest);
-			return dtoConverter.convertStatQueryResultModelPageToDTO(results);
+			return dtoConverter.convertStatQueryResultModelPageToDTO(results, normalized.aggregation().stream().map(m -> OidMetric.valueOf(m)).collect(Collectors.toSet()));
 
 		} catch (final ArrowheadException ex) {
 			throw new ArrowheadException(ex.getMessage(), origin);

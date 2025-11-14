@@ -52,9 +52,10 @@ public class DeviceQoSEvaluatorConstants {
 	// API related
 	
 	public static final String HTTP_API_BASE_PATH = "/deviceqosevaluator";
+	public static final String HTTP_API_MGMT_PATH = HTTP_API_BASE_PATH + "/mgmt";
 	public static final String HTTP_API_MONITOR_PATH = HTTP_API_BASE_PATH + "/monitor";
 	public static final String HTTP_API_QUALITY_EVALUATION_PATH = HTTP_API_BASE_PATH + "/qualityevaluation";
-	public static final String HTTP_API_DEVICE_QUALITY_DATA_MANAGEMENT_PATH = HTTP_API_BASE_PATH + "/devicequalitydatamanagement";
+	public static final String HTTP_API_DEVICE_QUALITY_DATA_MANAGEMENT_PATH = HTTP_API_MGMT_PATH + "/devicequalitydatamanagement";
 
 	public static final String HTTP_API_OP_FILTER_PATH = "/filter";
 	public static final String HTTP_API_OP_SORT_PATH = "/sort";

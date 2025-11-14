@@ -23,7 +23,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import eu.arrowhead.common.Constants;
@@ -70,7 +72,7 @@ public class DeviceQualityDataManagementAPI {
 					@Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorMessageDTO.class)) })
 	})
 	@PostMapping(path = DeviceQoSEvaluatorConstants.HTTP_API_OP_QUERY_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public QoSDeviceStatQueryResponseDTO query(final QoSDeviceStatQueryRequestDTO dto) {
+	public @ResponseBody QoSDeviceStatQueryResponseDTO query(final @RequestBody QoSDeviceStatQueryRequestDTO dto) {
 		logger.debug("query started");
 		
 		final String origin = HttpMethod.POST.name() + " " + DeviceQoSEvaluatorConstants.HTTP_API_DEVICE_QUALITY_DATA_MANAGEMENT_PATH + DeviceQoSEvaluatorConstants.HTTP_API_OP_QUERY_PATH;
