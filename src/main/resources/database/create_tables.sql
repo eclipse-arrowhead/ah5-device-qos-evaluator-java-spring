@@ -80,3 +80,31 @@ CREATE TABLE IF NOT EXISTS `stat_memory_used` (
   `current` double NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- Statistics | Network Egress Load
+
+CREATE TABLE IF NOT EXISTS `stat_net_egress_load` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `uuid` binary(16) NOT NUll,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `minimum` double NOT NULL,
+  `maximum` double NOT NULL,
+  `mean` double NOT NULL,
+  `median` double NOT NULL,
+  `current` double NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- Statistics | Network Ingress Load
+
+CREATE TABLE IF NOT EXISTS `stat_net_ingress_load` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `uuid` binary(16) NOT NUll,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `minimum` double NOT NULL,
+  `maximum` double NOT NULL,
+  `mean` double NOT NULL,
+  `median` double NOT NULL,
+  `current` double NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

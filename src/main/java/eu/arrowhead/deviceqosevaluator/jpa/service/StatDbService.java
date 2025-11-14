@@ -44,11 +44,15 @@ import eu.arrowhead.common.exception.InternalServerError;
 import eu.arrowhead.deviceqosevaluator.enums.OidGroup;
 import eu.arrowhead.deviceqosevaluator.jpa.entity.StatCpuTotalLoad;
 import eu.arrowhead.deviceqosevaluator.jpa.entity.StatMemoryUsed;
+import eu.arrowhead.deviceqosevaluator.jpa.entity.StatNetEgressLoad;
+import eu.arrowhead.deviceqosevaluator.jpa.entity.StatNetIngressLoad;
 import eu.arrowhead.deviceqosevaluator.jpa.entity.StatRoundTripTime;
 import eu.arrowhead.deviceqosevaluator.jpa.entity.System;
 import eu.arrowhead.deviceqosevaluator.jpa.entity.mapped.StatEntity;
 import eu.arrowhead.deviceqosevaluator.jpa.repository.StatCpuTotalLoadRepository;
 import eu.arrowhead.deviceqosevaluator.jpa.repository.StatMemoryUsedRepository;
+import eu.arrowhead.deviceqosevaluator.jpa.repository.StatNetEgressLoadRepository;
+import eu.arrowhead.deviceqosevaluator.jpa.repository.StatNetIngressLoadRepository;
 import eu.arrowhead.deviceqosevaluator.jpa.repository.StatRoundTripTimeRepository;
 import eu.arrowhead.deviceqosevaluator.jpa.repository.SystemRepository;
 import eu.arrowhead.deviceqosevaluator.jpa.service.model.StatQueryResultModel;
@@ -67,6 +71,12 @@ public class StatDbService {
 
 	@Autowired
 	private StatMemoryUsedRepository memoryStatRepo;
+
+	@Autowired
+	private StatNetEgressLoadRepository netEgressStatRepo;
+
+	@Autowired
+	private StatNetIngressLoadRepository netIngressStatRepo;
 
 	@Autowired
 	private SystemRepository systemRepo;
@@ -98,6 +108,17 @@ public class StatDbService {
 			case MEMORY_USED:
 				memoryStatRepo.saveAndFlush(new StatMemoryUsed(deviceId, timestamp, data.get(0), data.get(1), data.get(2), data.get(3), data.get(4)));
 				break;
+
+			case NETWORK_EGRESS_LOAD:
+				netEgressStatRepo.saveAndFlush(new StatNetEgressLoad(deviceId, timestamp, data.get(0), data.get(1), data.get(2), data.get(3), data.get(4)));
+				break;
+
+			case NETWORK_INGRESS_LOAD:
+				netIngressStatRepo.saveAndFlush(new StatNetIngressLoad(deviceId, timestamp, data.get(0), data.get(1), data.get(2), data.get(3), data.get(4)));
+				break;
+
+			default:
+				logger.error("Unhandled OID group: " + oidGroup);
 			}
 
 		} catch (final Exception ex) {
@@ -125,8 +146,19 @@ public class StatDbService {
 			case MEMORY_USED:
 				result.addAll(memoryStatRepo.findAllByUuidAndTimestampAfter(deviceId, timestamp));
 				break;
-			}
 
+			case NETWORK_EGRESS_LOAD:
+				result.addAll(netEgressStatRepo.findAllByUuidAndTimestampAfter(deviceId, timestamp));
+				break;
+
+			case NETWORK_INGRESS_LOAD:
+				result.addAll(netIngressStatRepo.findAllByUuidAndTimestampAfter(deviceId, timestamp));
+				break;
+
+			default:
+				logger.error("Unhandled OID group: " + oidGroup);
+			}
+			
 			return result;
 
 		} catch (final Exception ex) {
@@ -175,6 +207,23 @@ public class StatDbService {
 				pageable = memoryStatPage.getPageable();
 				total = memoryStatPage.getTotalElements();
 				break;
+				
+			case NETWORK_EGRESS_LOAD:
+				final Page<StatNetEgressLoad> netEgressStatPage = queryNetEgressLoad(devices, start, end, pagination);
+				records.addAll(netEgressStatPage.getContent());
+				pageable = netEgressStatPage.getPageable();
+				total = netEgressStatPage.getTotalElements();
+				break;
+				
+			case NETWORK_INGRESS_LOAD:
+				final Page<StatNetIngressLoad> netIngressStatPage = queryNetIngressLoad(devices, start, end, pagination);
+				records.addAll(netIngressStatPage.getContent());
+				pageable = netIngressStatPage.getPageable();
+				total = netIngressStatPage.getTotalElements();
+				break;
+				
+			default:
+				logger.error("Unhandled OID group: " + oidGroup);
 			}
 
 			final Map<UUID, List<System>> deviceSysCache = new HashMap<>();
@@ -226,5 +275,25 @@ public class StatDbService {
 			return memoryStatRepo.findAllByTimestampBetween(start, end, pagination);
 		}
 		return memoryStatRepo.findAllByUuidInAndTimestampBetween(devices, start, end, pagination);
+	}
+	
+	//-------------------------------------------------------------------------------------------------
+	private Page<StatNetEgressLoad> queryNetEgressLoad(final Set<UUID> devices, final ZonedDateTime start, final ZonedDateTime end, final PageRequest pagination) {
+		logger.debug("queryNetEgressLoad started");
+
+		if (Utilities.isEmpty(devices)) {
+			return netEgressStatRepo.findAllByTimestampBetween(start, end, pagination);
+		}
+		return netEgressStatRepo.findAllByUuidInAndTimestampBetween(devices, start, end, pagination);
+	}
+	
+	//-------------------------------------------------------------------------------------------------
+	private Page<StatNetIngressLoad> queryNetIngressLoad(final Set<UUID> devices, final ZonedDateTime start, final ZonedDateTime end, final PageRequest pagination) {
+		logger.debug("queryNetIngressLoad started");
+
+		if (Utilities.isEmpty(devices)) {
+			return netIngressStatRepo.findAllByTimestampBetween(start, end, pagination);
+		}
+		return netIngressStatRepo.findAllByUuidInAndTimestampBetween(devices, start, end, pagination);
 	}
 }
