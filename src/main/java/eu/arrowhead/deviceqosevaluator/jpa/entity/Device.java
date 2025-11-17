@@ -17,6 +17,7 @@
 package eu.arrowhead.deviceqosevaluator.jpa.entity;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import eu.arrowhead.common.Utilities;
@@ -32,6 +33,9 @@ public class Device {
 
 	//=================================================================================================
 	// members
+	
+	public static final List<String> SORTABLE_FIELDS_BY = List.of("id", "createdAt");
+	public static final String DEFAULT_SORT_FIELD = "createdAt";
 	
 	@Id
 	private UUID id;

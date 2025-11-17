@@ -24,6 +24,8 @@ import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -75,6 +77,20 @@ public class DeviceDbService {
 	}
 	
 	//-------------------------------------------------------------------------------------------------
+	public Page<Device> getPage(final Pageable page) {
+		logger.debug("findByAddresses started");
+		
+		try {			
+			return deviceRepo.findAll(page);
+		} catch (final Exception ex) {
+			logger.error(ex.getMessage());
+			logger.debug(ex);
+			throw new InternalServerError("Database operation error");
+		}
+		
+	}
+	
+	//-------------------------------------------------------------------------------------------------
 	@Transactional(rollbackFor = ArrowheadException.class)
 	public Device create(final String address, final boolean augmented) {
 		logger.debug("create started");
@@ -97,6 +113,34 @@ public class DeviceDbService {
 		
 		try {
 			return deviceRepo.saveAndFlush(device);			
+		} catch (final Exception ex) {
+			logger.error(ex.getMessage());
+			logger.debug(ex);
+			throw new InternalServerError("Database operation error");
+		}
+	}
+	
+	//-------------------------------------------------------------------------------------------------
+	@Transactional(rollbackFor = ArrowheadException.class)
+	public void update(final Iterable<Device> devices) {
+		logger.debug("update started");
+		
+		try {
+			deviceRepo.saveAllAndFlush(devices);			
+		} catch (final Exception ex) {
+			logger.error(ex.getMessage());
+			logger.debug(ex);
+			throw new InternalServerError("Database operation error");
+		}
+	}
+	
+	//-------------------------------------------------------------------------------------------------
+	@Transactional(rollbackFor = ArrowheadException.class)
+	public void remove(final Iterable<Device> devices) {
+		logger.debug("update started");
+		
+		try {
+			deviceRepo.deleteAllInBatch(devices);			
 		} catch (final Exception ex) {
 			logger.error(ex.getMessage());
 			logger.debug(ex);

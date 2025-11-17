@@ -53,6 +53,12 @@ public class DeviceQoSEvaluatorSystemInfo extends SystemInfo {
 
 	@Value(DeviceQoSEvaluatorConstants.$CLEANING_JOB_INTERVAL_WD)
 	private long cleaningJobInterval;
+	
+	@Value(DeviceQoSEvaluatorConstants.$INACTIVE_DEVICE_MAX_AGE_WD)
+	private int inactiveDeviceMaxAge;
+	
+	@Value(Constants.$MAX_PAGE_SIZE_WD)
+	private int maxPageSize;
 
 	private SystemModel systemModel;
 
@@ -122,6 +128,16 @@ public class DeviceQoSEvaluatorSystemInfo extends SystemInfo {
 	//-------------------------------------------------------------------------------------------------
 	public long getCleaningJobInterval() {
 		return cleaningJobInterval;
+	}
+
+	//-------------------------------------------------------------------------------------------------
+	public int getInactiveDeviceMaxAge() {
+		return inactiveDeviceMaxAge;
+	}
+
+	//-------------------------------------------------------------------------------------------------
+	public int getMaxPageSize() {
+		return maxPageSize;
 	}
 
 	//=================================================================================================

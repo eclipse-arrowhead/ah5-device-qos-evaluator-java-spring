@@ -28,6 +28,7 @@ public class DeviceQoSEvaluatorDefaults extends Defaults {
 	public static final String AUGMENTED_MEASUEREMENT_JOB_INTERVAL_DEFAULT = "10"; // sec
 	public static final String EVALUATION_TIME_WINDOW_DEFAULT = "60"; // sec
 	public static final String CLEANING_JOB_INTERVAL_DEFAULT = "60"; // sec
+	public static final String INACTIVE_DEVICE_MAX_AGE_DEFAULT = "30"; // min
 	
 	//=================================================================================================
 	// assistant methods

@@ -16,26 +16,107 @@
  *******************************************************************************/
 package eu.arrowhead.deviceqosevaluator.quartz.job;
 
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.quartz.SchedulerException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.scheduling.quartz.QuartzJobBean;
+
+import eu.arrowhead.common.Utilities;
+import eu.arrowhead.deviceqosevaluator.DeviceQoSEvaluatorSystemInfo;
+import eu.arrowhead.deviceqosevaluator.jpa.entity.Device;
+import eu.arrowhead.deviceqosevaluator.jpa.service.DeviceDbService;
+import eu.arrowhead.deviceqosevaluator.jpa.service.SystemDbService;
+import eu.arrowhead.deviceqosevaluator.quartz.scheduler.AugmentedMeasurementJobScheduler;
+import eu.arrowhead.deviceqosevaluator.quartz.scheduler.RttMeasurementJobScheduler;
 
 @DisallowConcurrentExecution
 public class CleaningJob extends QuartzJobBean {
 
 	//=================================================================================================
 	// members
-	
+
+	@Autowired
+	private DeviceQoSEvaluatorSystemInfo sysInfo;
+
+	@Autowired
+	private DeviceDbService deviceDbService;
+
+	@Autowired
+	private SystemDbService systemDbService;
+
+	@Autowired
+	private RttMeasurementJobScheduler rttMeasurementJobScheduler;
+
+	@Autowired
+	private AugmentedMeasurementJobScheduler augmentedMeasurementJobScheduler;
+
+	private final Logger logger = LogManager.getLogger(this.getClass());
+
 	//=================================================================================================
 	// methods
-	
-	
+
 	//-------------------------------------------------------------------------------------------------
 	@Override
-	protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
-		System.out.println("cleaning job started [NOT IMPLEMENTED]"); // TODO
-		// Set devices to inactive if no system is associated (also stop scheduling)
-		// Delete inactive devices after a certain age compared to updatedAt (also stop scheduling for sure)
+	protected void executeInternal(final JobExecutionContext context) throws JobExecutionException {
+		logger.debug("executeInternal started");
+
+		try {
+			final ZonedDateTime now = Utilities.utcNow();
+			final List<Device> toRemove = new ArrayList<>();
+
+			int page = 0;
+			boolean hasNext = true;
+			do {
+				final Page<Device> devicePage = deviceDbService.getPage(PageRequest.of(page, sysInfo.getMaxPageSize(), Direction.ASC, Device.DEFAULT_SORT_FIELD));
+				hasNext = devicePage.hasNext();
+				page++;
+
+				final List<Device> toUpdate = new ArrayList<>();
+				for (final Device device : devicePage.getContent()) {
+					if (device.isInactive() && device.getUpdatedAt().plusMinutes(sysInfo.getInactiveDeviceMaxAge()).isAfter(now)) {
+						toRemove.add(device);
+						stopMeasuring(device); // just for sure
+						
+					} else if (Utilities.isEmpty(systemDbService.findByDeviceId(device.getId()))) {
+						device.setInactive(true);
+						stopMeasuring(device);
+						toUpdate.add(device);
+					}
+				}
+
+				deviceDbService.update(toUpdate);
+
+			} while (hasNext);
+
+			deviceDbService.remove(toRemove);
+
+		} catch (final Exception ex) {
+			logger.error(ex.getMessage());
+			logger.debug(ex);
+		}
+	}
+	
+	//=================================================================================================
+	// assistant methods
+	
+	//-------------------------------------------------------------------------------------------------
+	private void stopMeasuring(final Device device) throws SchedulerException {
+		if (rttMeasurementJobScheduler.isScheduled(device)) {
+			rttMeasurementJobScheduler.stop(List.of(device));
+		}
+		if (augmentedMeasurementJobScheduler.isScheduled(device)) {
+			augmentedMeasurementJobScheduler.stop(List.of(device));
+		}
 	}
 }
