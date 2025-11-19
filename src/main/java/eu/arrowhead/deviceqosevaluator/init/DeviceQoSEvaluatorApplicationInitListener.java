@@ -123,6 +123,13 @@ public class DeviceQoSEvaluatorApplicationInitListener extends ApplicationInitLi
 		if (sysInfo.getRttMeasurementJobInterval() < DeviceQoSEvaluatorConstants.RTT_MEASUREMENT_JOB_INTERVAL_MIN_VALUE) {
 			throw new ConfigurationException("Invalid configuration: '" + DeviceQoSEvaluatorConstants.RTT_MEASUREMENT_JOB_INTERVAL + "' cannot be less than " + DeviceQoSEvaluatorConstants.RTT_MEASUREMENT_JOB_INTERVAL_MIN_VALUE + " sec");
 		}
+		if (sysInfo.getRttMeasurementTimeout() < DeviceQoSEvaluatorConstants.RTT_MEASUREMENT_TIMEOUT_MIN_VALUE) {
+			throw new ConfigurationException("Invalid configuration: '" + DeviceQoSEvaluatorConstants.RTT_MEASUREMENT_TIMEOUT + "' cannot be less than " + DeviceQoSEvaluatorConstants.RTT_MEASUREMENT_TIMEOUT_MIN_VALUE + " ms");
+		}
+		if (sysInfo.getRttMeasurementTimeout() >= sysInfo.getRttMeasurementJobInterval() * 1000) {
+			throw new ConfigurationException("Invalid configuration: '" + DeviceQoSEvaluatorConstants.RTT_MEASUREMENT_TIMEOUT + "' must be less than '"
+					+ DeviceQoSEvaluatorConstants.RTT_MEASUREMENT_JOB_INTERVAL + "' (" + (sysInfo.getRttMeasurementJobInterval() * 1000) + " ms)");
+		}
 		if (sysInfo.getAugmentedMeasurementJobInterval() < DeviceQoSEvaluatorConstants.AUGMENTED_MEASUREMENT_JOB_INTERVAL_MIN_VALUE) {
 			throw new ConfigurationException("Invalid configuration: '" + DeviceQoSEvaluatorConstants.AUGMENTED_MEASUREMENT_JOB_INTERVAL + "' cannot be less than " + DeviceQoSEvaluatorConstants.AUGMENTED_MEASUREMENT_JOB_INTERVAL_MIN_VALUE + " sec");
 		}
@@ -130,7 +137,8 @@ public class DeviceQoSEvaluatorApplicationInitListener extends ApplicationInitLi
 			throw new ConfigurationException("Invalid configuration: '" + DeviceQoSEvaluatorConstants.CLEANING_JOB_INTERVAL + "' cannot be less than " + DeviceQoSEvaluatorConstants.CLEANING_JOB_INTERVAL_MIN_VALUE + " sec");
 		}
 		if (sysInfo.getEvaluationTimeWindow() >= sysInfo.getRawMeasurementDataMaxAge() * 60) {
-			throw new ConfigurationException("Invalid configuration: '" + DeviceQoSEvaluatorConstants.EVALUATION_TIME_WINDOW + "' must be less than " + DeviceQoSEvaluatorConstants.RAW_MEASUREMENT_DATA_MAX_AGE);
+			throw new ConfigurationException("Invalid configuration: '" + DeviceQoSEvaluatorConstants.EVALUATION_TIME_WINDOW + "' must be less than '"
+					+ DeviceQoSEvaluatorConstants.RAW_MEASUREMENT_DATA_MAX_AGE + "' (" + (sysInfo.getRawMeasurementDataMaxAge() * 60) + " sec)");
 		}
 	}
 }

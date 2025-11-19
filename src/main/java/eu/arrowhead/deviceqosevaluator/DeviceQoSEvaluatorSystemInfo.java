@@ -44,6 +44,9 @@ public class DeviceQoSEvaluatorSystemInfo extends SystemInfo {
 
 	@Value(DeviceQoSEvaluatorConstants.$RTT_MEASUREMENT_JOB_INTERVAL_WD)
 	private long rttMeasurementJobInterval;
+	
+	@Value(DeviceQoSEvaluatorConstants.$RTT_MEASUREMENT_TIMEOUT_WD)
+	private int rttMeasurementTimeout;
 
 	@Value(DeviceQoSEvaluatorConstants.$AUGMENTED_MEASUREMENT_JOB_INTERVAL_WD)
 	private long augmentedMeasurementJobInterval;
@@ -123,6 +126,11 @@ public class DeviceQoSEvaluatorSystemInfo extends SystemInfo {
 	//-------------------------------------------------------------------------------------------------
 	public long getRttMeasurementJobInterval() {
 		return rttMeasurementJobInterval;
+	}
+
+	//-------------------------------------------------------------------------------------------------
+	public int getRttMeasurementTimeout() {
+		return rttMeasurementTimeout;
 	}
 
 	//-------------------------------------------------------------------------------------------------

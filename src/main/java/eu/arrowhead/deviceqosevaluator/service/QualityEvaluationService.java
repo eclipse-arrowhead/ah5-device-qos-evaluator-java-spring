@@ -134,10 +134,17 @@ public class QualityEvaluationService {
 		for (int i = 0; i < metricNames.size(); ++i) {
 			final String[] split = metricNames.get(i).toUpperCase().split(DeviceQoSEvaluatorConstants.OID_NAME_DELIMITER);
 			final OidGroup oidGroup = OidGroup.valueOf(split[0] + DeviceQoSEvaluatorConstants.OID_NAME_DELIMITER + split[1]);
-			metricModels.putIfAbsent(oidGroup, new OidMetricModel(oidGroup));
+			metricModels.putIfAbsent(oidGroup, new OidMetricModel(oidGroup, defineScaleTo(oidGroup)));
 			metricModels.get(oidGroup).getMetricWeight().put(OidMetric.valueOf(split[2]), metricWeights.get(i));
 		}
 		
 		return new ArrayList<>(metricModels.values());
+	}
+	
+	//-------------------------------------------------------------------------------------------------
+	private Double defineScaleTo(final OidGroup oidGroup) {
+		logger.debug("defineScaleTo started");
+		
+		return oidGroup != OidGroup.RTT ? null : Double.valueOf(sysInfo.getRttMeasurementTimeout());
 	}
 }

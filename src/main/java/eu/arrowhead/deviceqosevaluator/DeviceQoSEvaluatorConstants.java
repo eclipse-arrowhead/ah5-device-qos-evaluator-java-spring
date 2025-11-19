@@ -39,6 +39,9 @@ public class DeviceQoSEvaluatorConstants {
 	public static final String RTT_MEASUREMENT_JOB_INTERVAL = "rtt.measurement.job.interval";
 	public static final String $RTT_MEASUREMENT_JOB_INTERVAL_WD = "${" + RTT_MEASUREMENT_JOB_INTERVAL + ":" + DeviceQoSEvaluatorDefaults.RTT_MEASUEREMENT_JOB_INTERVAL_DEFAULT + "}";
 	public static final int RTT_MEASUREMENT_JOB_INTERVAL_MIN_VALUE = 5; // sec
+	public static final String RTT_MEASUREMENT_TIMEOUT = "rtt.measurement.timeout";
+	public static final String $RTT_MEASUREMENT_TIMEOUT_WD = "${" + RTT_MEASUREMENT_TIMEOUT + ":" + DeviceQoSEvaluatorDefaults.RTT_MEASUEREMENT_TIMEOUT_DEFAULT + "}";
+	public static final int RTT_MEASUREMENT_TIMEOUT_MIN_VALUE = 3000; // ms
 	public static final String AUGMENTED_MEASUREMENT_JOB_INTERVAL = "augmented.measurement.job.interval";
 	public static final String $AUGMENTED_MEASUREMENT_JOB_INTERVAL_WD = "${" + AUGMENTED_MEASUREMENT_JOB_INTERVAL + ":" + DeviceQoSEvaluatorDefaults.AUGMENTED_MEASUEREMENT_JOB_INTERVAL_DEFAULT + "}";
 	public static final int AUGMENTED_MEASUREMENT_JOB_INTERVAL_MIN_VALUE = 5; // sec
@@ -80,6 +83,5 @@ public class DeviceQoSEvaluatorConstants {
 	// Measurement related
 	
 	public static final List<Double> NO_MEASUREMENT_VALUES = List.of(-1d, -1d, -1d, -1d, -1d);
-	public static final int RTT_TIMEOUT = 5000; // ms	
 	
 }

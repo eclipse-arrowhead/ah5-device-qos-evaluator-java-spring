@@ -24,12 +24,19 @@ import java.net.SocketTimeoutException;
 import java.time.Duration;
 import java.time.Instant;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import eu.arrowhead.deviceqosevaluator.DeviceQoSEvaluatorConstants;
+import eu.arrowhead.deviceqosevaluator.DeviceQoSEvaluatorSystemInfo;
 
 @Service
 public class RttMeasurementDriver {
+
+	//=================================================================================================
+	// members
+
+	@Autowired
+	private DeviceQoSEvaluatorSystemInfo sysInfo;
 
 	//=================================================================================================
 	// methods
@@ -42,7 +49,7 @@ public class RttMeasurementDriver {
 
 			final Instant start = Instant.now();
 			try {
-				socket.connect(socketAddress, DeviceQoSEvaluatorConstants.RTT_TIMEOUT);
+				socket.connect(socketAddress, sysInfo.getRttMeasurementTimeout());
 
 				// port open
 				socket.close();

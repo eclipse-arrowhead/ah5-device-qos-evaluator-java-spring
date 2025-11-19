@@ -26,6 +26,7 @@ import java.util.UUID;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,7 @@ import eu.arrowhead.deviceqosevaluator.jpa.service.DeviceDbService;
 import eu.arrowhead.deviceqosevaluator.jpa.service.StatDbService;
 import eu.arrowhead.deviceqosevaluator.util.Stat;
 
+@DisallowConcurrentExecution
 public class AugmentedMeasurementJob extends QuartzJobBean {
 
 	//=================================================================================================
