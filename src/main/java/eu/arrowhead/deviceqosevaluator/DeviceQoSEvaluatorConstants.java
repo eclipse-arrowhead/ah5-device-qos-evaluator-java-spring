@@ -31,8 +31,6 @@ public class DeviceQoSEvaluatorConstants {
 	public static final String VERSION_QUALITY_EVALUATION = "1.0.0";
 	public static final String VERSION_DEVICE_QUALITY_DATA_MANAGEMENT = "1.0.0";
 	
-	public static final List<Double> NO_MEASUREMENT_VALUES = List.of(-1d, -1d, -1d, -1d, -1d);
-	
 	// Config related
 	
 	public static final String MEASUREMENT_ORGANIZER_JOB_INTERVAL = "measurement.organizer.job.interval";
@@ -71,8 +69,15 @@ public class DeviceQoSEvaluatorConstants {
 	public static final String MQTT_API_DEVICE_QUALITY_DATA_MANAGEMENT_BASE_TOPIC = MQTT_API_BASE_TOPIC_PREFIX + "/devicequalitydatamanagement/";
 	
 	// Quartz related
+	
 	public static final String MEASUREMENT_ORGANIZER_JOB = "measurement_organizer_job";
 	public static final String MEASUREMENT_ORGANIZER_JOB_TRIGGER = "measurement_organizer_job_trigger";
 	public static final String CLEANING_JOB = "cleaning_job";
 	public static final String CLEANING_JOB_TRIGGER = "cleaning_job_trigger";
+	
+	// Measurement related
+	
+	public static final List<Double> NO_MEASUREMENT_VALUES = List.of(-1d, -1d, -1d, -1d, -1d);
+	public static final int RTT_TIMEOUT = 5000; // ms	
+	
 }

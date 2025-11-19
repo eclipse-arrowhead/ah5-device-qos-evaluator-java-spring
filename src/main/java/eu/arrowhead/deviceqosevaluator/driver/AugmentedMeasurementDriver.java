@@ -55,8 +55,8 @@ public class AugmentedMeasurementDriver {
 	private static final String paramKey = "batch";
 	private static final int deviceClientWindowSize = 30; // sec 
 	
-	private static final int connectionTimeout= 2000; // ms
-	private static final int socketTimeout = 2000; // ms
+	private static final int connectionTimeout= 5000; // ms
+	private static final int socketTimeout = 5000; // ms
 	
 	private String batchSize;
 	private WebClient client;

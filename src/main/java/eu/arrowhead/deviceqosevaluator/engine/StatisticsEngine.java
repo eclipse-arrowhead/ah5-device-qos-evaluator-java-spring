@@ -120,7 +120,7 @@ public class StatisticsEngine {
 			}
 
 			for (final Entry<OidMetric, Double> metricEntry : metricModel.getMetricWeight().entrySet()) {
-				score = score + calculateMetricScore(metricEntry.getKey(), metricEntry.getValue(), data, metricModel.getGroup().getWorstStat());
+				score = score + calculateMetricScore(metricEntry.getKey(), metricModel.getScaleTo(), metricEntry.getValue(), data, metricModel.getGroup().getWorstStat());
 			}
 
 		}
@@ -146,7 +146,7 @@ public class StatisticsEngine {
 	}
 	
 	//-------------------------------------------------------------------------------------------------
-	private double calculateMetricScore(final OidMetric metric, final Double weight, final List<StatEntity> data, final double worstStat) {
+	private double calculateMetricScore(final OidMetric metric, final Double scaleTo, final Double weight, final List<StatEntity> data, final double worstStat) {
 		logger.debug("calculateMetricScore started");
 
 		if (Utilities.isEmpty(data)) {
@@ -155,12 +155,12 @@ public class StatisticsEngine {
 		
 		if (metric == OidMetric.CURRENT) {
 			data.sort(Comparator.comparing(StatEntity::getTimestamp)); // ascending
-			return getValue(metric, data.getLast(), worstStat) * weight;
+			return getValue(metric, data.getLast(), scaleTo, worstStat) * weight;
 		}
 
 		final double[] values = new double[data.size()];
 		for (int i = 0; i < values.length; ++i) {
-			values[i] = getValue(metric, data.get(i), worstStat);
+			values[i] = getValue(metric, data.get(i), scaleTo, worstStat);
 		}
 
 		switch (metric) {
@@ -183,7 +183,7 @@ public class StatisticsEngine {
 	}
 
 	//-------------------------------------------------------------------------------------------------
-	private double getValue(final OidMetric metric, final StatEntity stat, final double worstStat) {
+	private double getValue(final OidMetric metric, final StatEntity stat, final Double scaleTo, final double worstStat) {
 		logger.debug("getValue started");
 
 		double value = -1d;
@@ -210,8 +210,13 @@ public class StatisticsEngine {
 		}
 
 		if (value == -1) {
-			value = worstStat;
+			return worstStat;
 		}
+		
+		if (scaleTo != null) {
+			value = (value / scaleTo) * 100;
+		}
+		
 		return value;
 	}
 }

@@ -16,8 +16,6 @@
  *******************************************************************************/
 package eu.arrowhead.deviceqosevaluator.init;
 
-import java.util.List;
-
 import javax.naming.ConfigurationException;
 
 import org.apache.logging.log4j.LogManager;
@@ -25,11 +23,16 @@ import org.apache.logging.log4j.Logger;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Component;
 
 import eu.arrowhead.common.init.ApplicationInitListener;
 import eu.arrowhead.deviceqosevaluator.DeviceQoSEvaluatorConstants;
 import eu.arrowhead.deviceqosevaluator.DeviceQoSEvaluatorSystemInfo;
+import eu.arrowhead.deviceqosevaluator.jpa.entity.Device;
+import eu.arrowhead.deviceqosevaluator.jpa.service.DeviceDbService;
 import eu.arrowhead.deviceqosevaluator.quartz.scheduler.AugmentedMeasurementJobScheduler;
 import eu.arrowhead.deviceqosevaluator.quartz.scheduler.CleaningJobScheduler;
 import eu.arrowhead.deviceqosevaluator.quartz.scheduler.MeasurementOrganizerJobScheduler;
@@ -46,7 +49,7 @@ public class DeviceQoSEvaluatorApplicationInitListener extends ApplicationInitLi
 
 	@Autowired
 	private MeasurementOrganizerJobScheduler measurementOrganizerJobScheduler;
-	
+
 	@Autowired
 	private RttMeasurementJobScheduler rttMeasurementJobScheduler;
 
@@ -56,6 +59,9 @@ public class DeviceQoSEvaluatorApplicationInitListener extends ApplicationInitLi
 	@Autowired
 	private CleaningJobScheduler cleaningJobScheduler;
 
+	@Autowired
+	private DeviceDbService deviceDbService;
+
 	private final Logger logger = LogManager.getLogger(this.getClass());
 
 	//=================================================================================================
@@ -63,7 +69,7 @@ public class DeviceQoSEvaluatorApplicationInitListener extends ApplicationInitLi
 
 	//-------------------------------------------------------------------------------------------------
 	@Override
-	protected void customInit(ContextRefreshedEvent event) throws InterruptedException, ConfigurationException {
+	protected void customInit(final ContextRefreshedEvent event) throws InterruptedException, ConfigurationException {
 		validateConfiguration();
 
 		try {
@@ -89,9 +95,18 @@ public class DeviceQoSEvaluatorApplicationInitListener extends ApplicationInitLi
 			cleaningJobScheduler.stop();
 			logger.info("Cleaning job has been terminated");
 
-			augmentedMeasurementJobScheduler.stop(List.of()); // TODO
-			rttMeasurementJobScheduler.stop(List.of()); // TODO 
-		} catch (SchedulerException ex) {
+			int page = 0;
+			boolean hasNext = true;
+			do {
+				final Page<Device> devicePage = deviceDbService.getPage(PageRequest.of(page, sysInfo.getMaxPageSize(), Direction.ASC, Device.DEFAULT_SORT_FIELD));
+				hasNext = devicePage.hasNext();
+				page++;
+
+				augmentedMeasurementJobScheduler.stop(devicePage.getContent());
+				rttMeasurementJobScheduler.stop(devicePage.getContent());
+			} while (hasNext);
+
+		} catch (final SchedulerException ex) {
 			logger.error("Error occured while terminating jobs scheduling");
 			logger.debug(ex);
 		}

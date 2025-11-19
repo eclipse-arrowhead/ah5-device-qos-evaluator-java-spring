@@ -26,13 +26,10 @@ import java.time.Instant;
 
 import org.springframework.stereotype.Service;
 
+import eu.arrowhead.deviceqosevaluator.DeviceQoSEvaluatorConstants;
+
 @Service
 public class RttMeasurementDriver {
-
-	//=================================================================================================
-	// members	
-
-	private static final int timeout = 10000; // ms
 
 	//=================================================================================================
 	// methods
@@ -45,7 +42,7 @@ public class RttMeasurementDriver {
 
 			final Instant start = Instant.now();
 			try {
-				socket.connect(socketAddress, timeout);
+				socket.connect(socketAddress, DeviceQoSEvaluatorConstants.RTT_TIMEOUT);
 
 				// port open
 				socket.close();
