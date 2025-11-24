@@ -66,10 +66,10 @@ public class QualitiyEvaluationNormalization {
 
 	//-------------------------------------------------------------------------------------------------
 	private List<Double> normalizeMetricWeights(final List<Double> weights, final int size) {
-		final List<Double> normalized = new ArrayList<>(size);
+		List<Double> normalized = new ArrayList<>(size);
 
 		if (Utilities.isEmpty(weights)) {
-			final double w = 1 / size;
+			final double w = 1.0 / size;
 			for (int i = 0; i < size; ++i) {
 				normalized.add(w);
 			}
@@ -85,6 +85,8 @@ public class QualitiyEvaluationNormalization {
 			for (final Double w : weights) {
 				normalized.add(w / sum);
 			}
+		} else {
+			normalized = weights;
 		}
 
 		return normalized;

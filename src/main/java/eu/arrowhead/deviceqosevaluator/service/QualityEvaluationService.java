@@ -53,19 +53,19 @@ public class QualityEvaluationService {
 
 	//=================================================================================================
 	// members
-	
+
 	@Autowired
 	private DeviceQoSEvaluatorSystemInfo sysInfo;
-	
+
 	@Autowired
 	private QualitiyEvaluationValidation validator;
-	
+
 	@Autowired
 	private StatisticsEngine statEngine;
 
 	@Autowired
 	private ObjectMapper mapper;
-	
+
 	private final Logger logger = LogManager.getLogger(this.getClass());
 
 	//=================================================================================================
@@ -74,32 +74,32 @@ public class QualityEvaluationService {
 	//-------------------------------------------------------------------------------------------------
 	public QoSEvaluationFilterResponseDTO filter(final QoSEvaluationRequestDTO dto, final String origin) {
 		logger.debug("filter started");
-		
+
 		try {
 			final List<String> systems = dto == null ? null : dto.providers();
 			final QoSDeviceDataEvaluationConfigDTO config = dto == null || dto.configuration() == null ? null : mapper.readValue(Utilities.toJson(dto.configuration()), QoSDeviceDataEvaluationConfigDTO.class);
-			
+
 			final Pair<List<String>, QoSDeviceDataEvaluationConfigDTO> normalized = validator.validateAndNormalizeQoSEvaluationRequest(systems, config, true, origin);
-			
+
 			final List<SystemEvalModel> evaluated = evaluateRequest(normalized.getFirst(), normalized.getSecond());
 			final List<String> passedProviders = new ArrayList<>();
 			final List<String> droppedProviders = new ArrayList<>();
 			final Map<String, List<String>> warnings = new HashMap<>();
-			
+
 			for (final SystemEvalModel sysResult : evaluated) {
 				if (sysResult.getScore() <= config.threshold()) {
 					passedProviders.add(sysResult.getName());
 				} else {
 					droppedProviders.add(sysResult.getName());
 				}
-				
+
 				if (!Utilities.isEmpty(sysResult.getNoStat())) {
 					warnings.put(sysResult.getName(), sysResult.getNoStat().stream().map(item -> item.name()).toList());
 				}
 			}
-			
+
 			return new QoSEvaluationFilterResponseDTO(passedProviders, droppedProviders, warnings);
-			
+
 		} catch (final JsonProcessingException ex) {
 			throw new InvalidParameterException("Invalid configuration payload", origin);
 		}
@@ -112,13 +112,13 @@ public class QualityEvaluationService {
 		try {
 			final List<String> systems = dto == null ? null : dto.providers();
 			final QoSDeviceDataEvaluationConfigDTO config = dto == null || dto.configuration() == null ? null : mapper.readValue(Utilities.toJson(dto.configuration()), QoSDeviceDataEvaluationConfigDTO.class);
-			
+
 			final Pair<List<String>, QoSDeviceDataEvaluationConfigDTO> normalized = validator.validateAndNormalizeQoSEvaluationRequest(systems, config, false, origin);
-			
+
 			final List<SystemEvalModel> evaluated = evaluateRequest(normalized.getFirst(), normalized.getSecond());
 			final List<String> sortedProviders = new ArrayList<>();
 			final Map<String, List<String>> warnings = new HashMap<>();
-			
+
 			evaluated.sort(Comparator.comparingDouble(SystemEvalModel::getScore)); //ascending
 			for (final SystemEvalModel sysResult : evaluated) {
 				sortedProviders.add(sysResult.getName());
@@ -126,50 +126,50 @@ public class QualityEvaluationService {
 					warnings.put(sysResult.getName(), sysResult.getNoStat().stream().map(item -> item.name()).toList());
 				}
 			}
-			
+
 			return new QoSEvaluationSortResponseDTO(sortedProviders, warnings);
-			
+
 		} catch (final JsonProcessingException ex) {
 			throw new InvalidParameterException("Invalid configuration payload", origin);
 		}
 	}
-	
+
 	//=================================================================================================
 	// assistant methods
-	
+
 	//-------------------------------------------------------------------------------------------------
 	private List<SystemEvalModel> evaluateRequest(final List<String> systems, final QoSDeviceDataEvaluationConfigDTO config) {
 		logger.debug("evaluateRequest started");
-		
+
 		final Set<String> providers = new HashSet<>(systems);
 		final List<OidMetricModel> metricModels = parseMetricModels(config.metricNames(), config.metricWeights());
 		long timeWindow = config.timeWindow() == null ? sysInfo.getEvaluationTimeWindow() : config.timeWindow();
 		if (timeWindow < sysInfo.getAugmentedMeasurementJobInterval()) {
 			timeWindow = sysInfo.getAugmentedMeasurementJobInterval();
 		}
-		
+
 		return statEngine.evaluate(providers, metricModels, timeWindow);
 	}
-	
+
 	//-------------------------------------------------------------------------------------------------
 	private List<OidMetricModel> parseMetricModels(final List<String> metricNames, final List<Double> metricWeights) {
 		logger.debug("parseMetricModels started");
-		
+
 		final Map<OidGroup, OidMetricModel> metricModels = new HashMap<>();
 		for (int i = 0; i < metricNames.size(); ++i) {
-			final String[] split = metricNames.get(i).toUpperCase().split(DeviceQoSEvaluatorConstants.OID_NAME_DELIMITER);
-			final OidGroup oidGroup = OidGroup.valueOf(split[0] + DeviceQoSEvaluatorConstants.OID_NAME_DELIMITER + split[1]);
+			final int splitIdx = metricNames.get(i).lastIndexOf(DeviceQoSEvaluatorConstants.OID_NAME_DELIMITER);
+			final OidGroup oidGroup = OidGroup.valueOf(metricNames.get(i).substring(0, splitIdx).toUpperCase());
 			metricModels.putIfAbsent(oidGroup, new OidMetricModel(oidGroup, defineScaleTo(oidGroup)));
-			metricModels.get(oidGroup).getMetricWeight().put(OidMetric.valueOf(split[2]), metricWeights.get(i));
+			metricModels.get(oidGroup).getMetricWeight().put(OidMetric.valueOf(metricNames.get(i).substring(splitIdx + 1)), metricWeights.get(i));
 		}
-		
+
 		return new ArrayList<>(metricModels.values());
 	}
-	
+
 	//-------------------------------------------------------------------------------------------------
 	private Double defineScaleTo(final OidGroup oidGroup) {
 		logger.debug("defineScaleTo started");
-		
+
 		return oidGroup != OidGroup.RTT ? null : Double.valueOf(sysInfo.getRttMeasurementTimeout());
 	}
 }

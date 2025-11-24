@@ -130,9 +130,14 @@ public class QualitiyEvaluationValidation {
 		}
 
 		for (final String metricName : normalizedConfig.metricNames()) {
-			final String[] split = metricName.split(DeviceQoSEvaluatorConstants.OID_NAME_DELIMITER);
-			if (!Utilities.isEnumValue(split[0] + DeviceQoSEvaluatorConstants.OID_NAME_DELIMITER + split[1], OidGroup.class)
-					|| !Utilities.isEnumValue(split[2], OidMetric.class)) {
+			final int splitIdx = metricName.lastIndexOf(DeviceQoSEvaluatorConstants.OID_NAME_DELIMITER);
+			if (splitIdx <= 0 || splitIdx == metricName.length() - 1) {
+				throw new InvalidParameterException("Invalid metric name " + metricName, origin);
+			}
+
+			metricName.substring(0, splitIdx);
+			if (!Utilities.isEnumValue(metricName.substring(0, splitIdx), OidGroup.class)
+					|| !Utilities.isEnumValue(metricName.substring(splitIdx + 1), OidMetric.class)) {
 				throw new InvalidParameterException("Invalid metric name " + metricName, origin);
 			}
 		}
