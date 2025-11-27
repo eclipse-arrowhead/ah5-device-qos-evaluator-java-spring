@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
 import java.time.Duration;
 import java.time.Instant;
 
@@ -58,7 +57,7 @@ public class RttMeasurementDriver {
 				// port closed
 				result = Duration.between(start, Instant.now()).toMillis();
 
-			} catch (final SocketTimeoutException ex) {
+			} catch (final Exception ex) {
 				// unreachable
 				result = -1L;
 			}

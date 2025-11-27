@@ -95,7 +95,7 @@ public class QualityEvaluationMqttHandler extends MqttTopicHandler {
 	private QoSEvaluationSortResponseDTO sort(final QoSEvaluationRequestDTO dto) {
 		logger.debug("QualityEvaluationMqttHandler.sort started");
 
-		return qualityEvaluationService.sort(dto, baseTopic() + Constants.SERVICE_OP_FILTER);
+		return qualityEvaluationService.sort(dto, baseTopic() + Constants.SERVICE_OP_SORT);
 	}
 
 }

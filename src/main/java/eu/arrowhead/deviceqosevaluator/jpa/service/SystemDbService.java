@@ -102,7 +102,7 @@ public class SystemDbService {
 
 		try {
 			final List<System> systems = systemRepo.findAllByDeviceIsNull();
-			systemRepo.deleteAllByNameIn(systems.stream().map(s -> s.getName()).toList());
+			systemRepo.deleteAll(systems);
 			systemRepo.flush();
 			return systems.size();
 		} catch (final Exception ex) {

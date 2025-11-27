@@ -23,6 +23,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import eu.arrowhead.common.Utilities;
 import eu.arrowhead.common.exception.InvalidParameterException;
@@ -57,7 +58,7 @@ public class DeviceQualityDataManagementValidation {
 	// VALIDATION
 
 	//-------------------------------------------------------------------------------------------------
-	public void validateQueryRequest(final QoSDeviceStatQueryRequestDTO dto, final String origin) {
+	private void validateQueryRequest(final QoSDeviceStatQueryRequestDTO dto, final String origin) {
 		logger.debug("validateQueryRequest");
 
 		if (dto == null) {
@@ -76,6 +77,7 @@ public class DeviceQualityDataManagementValidation {
 	//-------------------------------------------------------------------------------------------------
 	public QoSDeviceStatQueryRequestDTO validateAndNormalizeQueryRequest(final QoSDeviceStatQueryRequestDTO dto, final String origin) {
 		logger.debug("validateAndNormalizeQueryRequest");
+		Assert.isTrue(!Utilities.isEmpty(origin), "origin is empty");
 
 		validateQueryRequest(dto, origin);
 		final QoSDeviceStatQueryRequestDTO normalized = normalizer.normalizeQoSDeviceStatQueryRequestDTO(dto);

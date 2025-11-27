@@ -42,7 +42,7 @@ import eu.arrowhead.deviceqosevaluator.enums.OidGroup;
 import eu.arrowhead.deviceqosevaluator.enums.OidMetric;
 import eu.arrowhead.deviceqosevaluator.service.model.OidMetricModel;
 import eu.arrowhead.deviceqosevaluator.service.model.SystemEvalModel;
-import eu.arrowhead.deviceqosevaluator.service.validation.QualitiyEvaluationValidation;
+import eu.arrowhead.deviceqosevaluator.service.validation.QualityEvaluationValidation;
 import eu.arrowhead.dto.QoSDeviceDataEvaluationConfigDTO;
 import eu.arrowhead.dto.QoSEvaluationFilterResponseDTO;
 import eu.arrowhead.dto.QoSEvaluationRequestDTO;
@@ -58,7 +58,7 @@ public class QualityEvaluationService {
 	private DeviceQoSEvaluatorSystemInfo sysInfo;
 
 	@Autowired
-	private QualitiyEvaluationValidation validator;
+	private QualityEvaluationValidation validator;
 
 	@Autowired
 	private StatisticsEngine statEngine;

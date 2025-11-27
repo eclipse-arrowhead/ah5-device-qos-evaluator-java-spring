@@ -43,7 +43,7 @@ public class Device {
 	@Column(nullable = false, unique = true, length = ArrowheadEntity.VARCHAR_LARGE)
 	private String address;
 
-	@Column(nullable = false)
+	@Column(nullable = true)
 	private Integer rttPort;
 
 	@Column(nullable = false, columnDefinition = "INT(1)")

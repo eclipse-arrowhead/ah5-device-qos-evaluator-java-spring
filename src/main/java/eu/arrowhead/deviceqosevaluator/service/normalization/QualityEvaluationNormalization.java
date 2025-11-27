@@ -17,6 +17,7 @@
 package eu.arrowhead.deviceqosevaluator.service.normalization;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,7 @@ import eu.arrowhead.deviceqosevaluator.DeviceQoSEvaluatorSystemInfo;
 import eu.arrowhead.dto.QoSDeviceDataEvaluationConfigDTO;
 
 @Service
-public class QualitiyEvaluationNormalization {
+public class QualityEvaluationNormalization {
 
 	//=================================================================================================
 	// members
@@ -73,10 +74,7 @@ public class QualitiyEvaluationNormalization {
 
 		if (Utilities.isEmpty(weights)) {
 			final double w = 1.0 / size;
-			for (int i = 0; i < size; ++i) {
-				normalized.add(w);
-			}
-			return normalized;
+			return Collections.nCopies(size, w);
 		}
 
 		double sum = 0;

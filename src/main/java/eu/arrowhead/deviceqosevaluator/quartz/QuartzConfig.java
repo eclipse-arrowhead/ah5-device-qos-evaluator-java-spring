@@ -30,7 +30,7 @@ public class QuartzConfig {
 
 	//-------------------------------------------------------------------------------------------------
 	@Bean
-	public AutowiringSpringBeanJobFactory jobFactory(final ApplicationContext applicationContext) {
+	AutowiringSpringBeanJobFactory jobFactory(final ApplicationContext applicationContext) {
 		final AutowiringSpringBeanJobFactory jobFactory = new AutowiringSpringBeanJobFactory();
 		jobFactory.setApplicationContext(applicationContext);
 		return jobFactory;
@@ -38,7 +38,7 @@ public class QuartzConfig {
 
 	//-------------------------------------------------------------------------------------------------
 	@Bean
-	public SchedulerFactoryBean schedulerFactoryBean(final AutowiringSpringBeanJobFactory jobFactory) {
+	SchedulerFactoryBean schedulerFactoryBean(final AutowiringSpringBeanJobFactory jobFactory) {
 		final SchedulerFactoryBean factory = new SchedulerFactoryBean();
 		factory.setJobFactory(jobFactory);
 		return factory;

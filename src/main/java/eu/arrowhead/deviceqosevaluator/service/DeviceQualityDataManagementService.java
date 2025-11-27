@@ -29,7 +29,8 @@ import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import eu.arrowhead.common.Utilities;
-import eu.arrowhead.common.exception.ArrowheadException;
+import eu.arrowhead.common.exception.ExternalServerError;
+import eu.arrowhead.common.exception.InternalServerError;
 import eu.arrowhead.common.service.PageService;
 import eu.arrowhead.deviceqosevaluator.dto.DTOConverter;
 import eu.arrowhead.deviceqosevaluator.engine.MeasurementEngine;
@@ -80,14 +81,14 @@ public class DeviceQualityDataManagementService {
 					OidGroup.valueOf(normalized.metricGroup()), pageRequest);
 			return dtoConverter.convertStatQueryResultModelPageToDTO(results, normalized.aggregation().stream().map(m -> OidMetric.valueOf(m)).collect(Collectors.toSet()));
 
-		} catch (final ArrowheadException ex) {
-			throw new ArrowheadException(ex.getMessage(), origin);
+		} catch (final InternalServerError ex) {
+			throw new InternalServerError(ex.getMessage(), origin);
 		}
 	}
 
 	//-------------------------------------------------------------------------------------------------
 	public String reload(final String origin) {
-		logger.debug("reloadSystems started");
+		logger.debug("reload started");
 
 		try {
 			final Pair<Integer, Integer> results = measurementEngine.organize();
@@ -95,10 +96,16 @@ public class DeviceQualityDataManagementService {
 				return "Reload operation is already in proggress";
 			}
 			return results.getFirst() + " more systems found, " + results.getSecond() + " systems removed";
-		} catch (final ArrowheadException | SchedulerException ex) {
+
+		} catch (final ExternalServerError ex) {
 			logger.error(ex.getMessage());
 			logger.debug(ex);
-			throw new ArrowheadException(ex.getMessage(), origin);
+			throw new ExternalServerError(ex.getMessage(), origin);
+
+		} catch (final InternalServerError | SchedulerException ex) {
+			logger.error(ex.getMessage());
+			logger.debug(ex);
+			throw new InternalServerError(ex.getMessage(), origin);
 		}
 	}
 }

@@ -51,19 +51,19 @@ def _calculate_network_load_percent(link_address):
         if iface not in stats or stats[iface].speed == 0:
             continue  # skip interfaces with unknown speed
 
-        # Calculate ingress (received) and egress (sent) in bits/sec
-        bytes_out = net2[iface].bytes_sent - net1[iface].bytes_sent
-        bytes_in = net2[iface].bytes_recv - net1[iface].bytes_recv
-        bps_out = (bytes_out * 8) / FREQUENCY
-        bps_in = (bytes_in * 8) / FREQUENCY
-
-        link_speed_bps = stats[iface].speed * 1_000_000  # Mbps → bps
-        egress_percent = round((bps_out / link_speed_bps) * 100, 2)
-        ingress_percent = round((bps_in / link_speed_bps) * 100, 2)
-
         # Gather assigned IP addresses
         if iface in addrs:
             for addr in addrs[iface]:
                 if addr.address == link_address:
+                    # Calculate ingress (received) and egress (sent) in bits/sec
+                    bytes_out = net2[iface].bytes_sent - net1[iface].bytes_sent
+                    bytes_in = net2[iface].bytes_recv - net1[iface].bytes_recv
+                    bps_out = (bytes_out * 8) / FREQUENCY
+                    bps_in = (bytes_in * 8) / FREQUENCY
+
+                    link_speed_bps = stats[iface].speed * 1_000_000  # Mbps → bps
+                    egress_percent = round((bps_out / link_speed_bps) * 100, 2)
+                    ingress_percent = round((bps_in / link_speed_bps) * 100, 2)
                     QUEUE_OUT.append(egress_percent)
                     QUEUE_IN.append(ingress_percent)
+                    return

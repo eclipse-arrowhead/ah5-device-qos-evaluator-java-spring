@@ -287,7 +287,7 @@ public class StatDbService {
 				results.add(new StatQueryResultModel(oidGroup, stat, deviceSysCache.get(stat.getUuid())));
 			}
 
-			return new PageImpl<StatQueryResultModel>(results, pageable, total);
+			return new PageImpl<>(results, pageable, total);
 
 		} catch (final Exception ex) {
 			logger.error(ex.getMessage());

@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import eu.arrowhead.common.Utilities;
 import eu.arrowhead.common.exception.InvalidParameterException;
@@ -31,11 +32,11 @@ import eu.arrowhead.deviceqosevaluator.DeviceQoSEvaluatorConstants;
 import eu.arrowhead.deviceqosevaluator.DeviceQoSEvaluatorSystemInfo;
 import eu.arrowhead.deviceqosevaluator.enums.OidGroup;
 import eu.arrowhead.deviceqosevaluator.enums.OidMetric;
-import eu.arrowhead.deviceqosevaluator.service.normalization.QualitiyEvaluationNormalization;
+import eu.arrowhead.deviceqosevaluator.service.normalization.QualityEvaluationNormalization;
 import eu.arrowhead.dto.QoSDeviceDataEvaluationConfigDTO;
 
 @Service
-public class QualitiyEvaluationValidation {
+public class QualityEvaluationValidation {
 
 	//=================================================================================================
 	// members
@@ -44,7 +45,7 @@ public class QualitiyEvaluationValidation {
 	private DeviceQoSEvaluatorSystemInfo sysInfo;
 
 	@Autowired
-	private QualitiyEvaluationNormalization normalizator;
+	private QualityEvaluationNormalization normalizator;
 
 	@Autowired
 	private SystemNameValidator systemNameValidator;
@@ -60,7 +61,7 @@ public class QualitiyEvaluationValidation {
 	// VALIDATION
 
 	//-------------------------------------------------------------------------------------------------
-	public void validateQoSEvaluationRequest(final List<String> systems, final QoSDeviceDataEvaluationConfigDTO config, final boolean needThreshold, final String origin) {
+	private void validateQoSEvaluationRequest(final List<String> systems, final QoSDeviceDataEvaluationConfigDTO config, final boolean needThreshold, final String origin) {
 		logger.debug("validateQoSEvaluationRequestDTO started");
 
 		if (Utilities.isEmpty(systems)) {
@@ -89,7 +90,7 @@ public class QualitiyEvaluationValidation {
 			}
 
 			if (config.metricNames().size() != config.metricWeights().size()) {
-				throw new InvalidParameterException("Metric names and weights configuration lists have different size", origin);
+				throw new InvalidParameterException("Metric names and weights configuration lists have different sizes", origin);
 			}
 		}
 
@@ -119,6 +120,7 @@ public class QualitiyEvaluationValidation {
 	//-------------------------------------------------------------------------------------------------
 	public Pair<List<String>, QoSDeviceDataEvaluationConfigDTO> validateAndNormalizeQoSEvaluationRequest(final List<String> systems, final QoSDeviceDataEvaluationConfigDTO config, final boolean needThreshold, final String origin) {
 		logger.debug("validateAndNormalizeQoSEvaluationRequestDTO started");
+		Assert.isTrue(!Utilities.isEmpty(origin), "origin is empty");
 
 		validateQoSEvaluationRequest(systems, config, needThreshold, origin);
 		final List<String> normalizedSystemNames = normalizator.normalizeSystemNames(systems);
@@ -138,7 +140,6 @@ public class QualitiyEvaluationValidation {
 				throw new InvalidParameterException("Invalid metric name " + metricName, origin);
 			}
 
-			metricName.substring(0, splitIdx);
 			if (!Utilities.isEnumValue(metricName.substring(0, splitIdx), OidGroup.class)
 					|| !Utilities.isEnumValue(metricName.substring(splitIdx + 1), OidMetric.class)) {
 				throw new InvalidParameterException("Invalid metric name " + metricName, origin);

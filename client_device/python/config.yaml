@@ -5,4 +5,4 @@ measurements:
     enabled: true
   network_load:
     enabled: true
-    link_address: 192.168.0.105
+    link_address: <ip address of the device to be measure>

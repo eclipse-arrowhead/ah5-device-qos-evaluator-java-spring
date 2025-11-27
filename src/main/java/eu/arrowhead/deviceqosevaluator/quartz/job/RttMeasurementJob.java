@@ -140,7 +140,11 @@ public class RttMeasurementJob extends QuartzJobBean {
 
 	//-------------------------------------------------------------------------------------------------
 	private int randomPort() {
-		return ThreadLocalRandom.current().nextInt(MIN_TEST_PORT, MAX_TEST_PORT + 1);
+		int port = DeviceQoSEvaluatorConstants.AUGMENTED_MEASUREMENT_PORT;
+		while (port == DeviceQoSEvaluatorConstants.AUGMENTED_MEASUREMENT_PORT) {
+			port = ThreadLocalRandom.current().nextInt(MIN_TEST_PORT, MAX_TEST_PORT + 1);
+		}
+		return port;
 	}
 
 }

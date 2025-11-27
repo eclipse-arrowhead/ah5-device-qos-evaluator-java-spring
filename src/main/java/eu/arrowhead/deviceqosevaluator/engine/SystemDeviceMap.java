@@ -135,7 +135,7 @@ public class SystemDeviceMap {
 	//-------------------------------------------------------------------------------------------------
 	@SuppressWarnings("unchecked")
 	private boolean supportsAugmented(final SystemResponseDTO system) {
-		logger.debug("findDevice started");
+		logger.debug("supportsAugmented started");
 
 		if (Utilities.isEmpty(system.metadata()) || !system.metadata().containsKey(Constants.PROPERTY_KEY_QOS)) {
 			return false;

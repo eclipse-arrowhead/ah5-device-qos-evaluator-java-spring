@@ -91,8 +91,8 @@ public class CleaningJob extends QuartzJobBean {
 				final List<Device> toUpdate = new ArrayList<>();
 				for (final Device device : devicePage.getContent()) {
 					if (device.isInactive()
-							&& device.getUpdatedAt().plusMinutes(sysInfo.getInactiveDeviceMaxAge()).isAfter(now)
-							&& statDbService.hasAny(device.getId())) {
+							&& device.getUpdatedAt().plusMinutes(sysInfo.getInactiveDeviceMaxAge()).isBefore(now)
+							&& !statDbService.hasAny(device.getId())) {
 						toRemove.add(device);
 						stopMeasuring(device); // just for sure
 

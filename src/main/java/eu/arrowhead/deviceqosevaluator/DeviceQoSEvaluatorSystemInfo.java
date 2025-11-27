@@ -99,6 +99,13 @@ public class DeviceQoSEvaluatorSystemInfo extends SystemInfo {
 	@Override
 	public List<ServiceModel> getServices() {
 
+		final ServiceModel generalManagement = new ServiceModel.Builder()
+				.serviceDefinition(Constants.SERVICE_DEF_GENERAL_MANAGEMENT)
+				.version(DeviceQoSEvaluatorConstants.VERSION_GENERAL_MANAGEMENT)
+				.serviceInterface(getHttpServiceInterfaceForGeneralManagement())
+				.serviceInterface(getMqttServiceInterfaceForGeneralManagement())
+				.build();
+
 		final ServiceModel qualityEvaluation = new ServiceModel.Builder()
 				.serviceDefinition(Constants.SERVICE_DEF_QUALITY_EVALUATION)
 				.version(DeviceQoSEvaluatorConstants.VERSION_QUALITY_EVALUATION)
@@ -115,7 +122,7 @@ public class DeviceQoSEvaluatorSystemInfo extends SystemInfo {
 				.build();
 
 		// starting with management services speeds up management filters
-		return List.of(deviceQualityDataManagement, qualityEvaluation);
+		return List.of(generalManagement, deviceQualityDataManagement, qualityEvaluation);
 		// TODO: add monitor service when it is specified and implemented
 	}
 
@@ -192,6 +199,11 @@ public class DeviceQoSEvaluatorSystemInfo extends SystemInfo {
 	// HTTP Interfaces
 
 	//-------------------------------------------------------------------------------------------------
+	private InterfaceModel getHttpServiceInterfaceForGeneralManagement() {
+		return getHttpServiceInterfaceForAGeneralManagementService(DeviceQoSEvaluatorConstants.HTTP_API_GENERAL_MANAGEMENT_PATH);
+	}
+
+	//-------------------------------------------------------------------------------------------------
 	private InterfaceModel getHttpServiceInterfaceForQualityEvaluationService() {
 		return getHttpServiceInterfaceForAQualityEvaluationService(DeviceQoSEvaluatorConstants.HTTP_API_QUALITY_EVALUATION_PATH);
 	}
@@ -204,8 +216,29 @@ public class DeviceQoSEvaluatorSystemInfo extends SystemInfo {
 	// HTTP Interface Operations
 
 	//-------------------------------------------------------------------------------------------------
+	private InterfaceModel getHttpServiceInterfaceForAGeneralManagementService(final String basePath) {
+		final String templateName = isSslEnabled() ? Constants.GENERIC_HTTPS_INTERFACE_TEMPLATE_NAME : Constants.GENERIC_HTTP_INTERFACE_TEMPLATE_NAME;
+
+		final HttpOperationModel log = new HttpOperationModel.Builder()
+				.method(HttpMethod.POST.name())
+				.path(Constants.HTTP_API_OP_LOGS_PATH)
+				.build();
+
+		final HttpOperationModel config = new HttpOperationModel.Builder()
+				.method(HttpMethod.GET.name())
+				.path(Constants.HTTP_API_OP_GET_CONFIG_PATH)
+				.build();
+
+		return new HttpInterfaceModel.Builder(templateName, getDomainAddress(), getServerPort())
+				.basePath(DeviceQoSEvaluatorConstants.HTTP_API_GENERAL_MANAGEMENT_PATH)
+				.operation(Constants.SERVICE_OP_GET_LOG, log)
+				.operation(Constants.SERVICE_OP_GET_CONFIG, config)
+				.build();
+	}
+
+	//-------------------------------------------------------------------------------------------------
 	private InterfaceModel getHttpServiceInterfaceForAQualityEvaluationService(final String basePath) {
-		final String templateName = getSslProperties().isSslEnabled() ? Constants.GENERIC_HTTPS_INTERFACE_TEMPLATE_NAME : Constants.GENERIC_HTTP_INTERFACE_TEMPLATE_NAME;
+		final String templateName = isSslEnabled() ? Constants.GENERIC_HTTPS_INTERFACE_TEMPLATE_NAME : Constants.GENERIC_HTTP_INTERFACE_TEMPLATE_NAME;
 
 		final HttpOperationModel filter = new HttpOperationModel.Builder()
 				.method(HttpMethod.POST.name())
@@ -225,14 +258,14 @@ public class DeviceQoSEvaluatorSystemInfo extends SystemInfo {
 
 	//-------------------------------------------------------------------------------------------------
 	private InterfaceModel getHttpServiceInterfaceForADeviceQualityDataManagementService(final String basePath) {
-		final String templateName = getSslProperties().isSslEnabled() ? Constants.GENERIC_HTTPS_INTERFACE_TEMPLATE_NAME : Constants.GENERIC_HTTP_INTERFACE_TEMPLATE_NAME;
+		final String templateName = isSslEnabled() ? Constants.GENERIC_HTTPS_INTERFACE_TEMPLATE_NAME : Constants.GENERIC_HTTP_INTERFACE_TEMPLATE_NAME;
 
 		final HttpOperationModel query = new HttpOperationModel.Builder()
 				.method(HttpMethod.POST.name())
 				.path(DeviceQoSEvaluatorConstants.HTTP_API_OP_QUERY_PATH)
 				.build();
 		final HttpOperationModel reload = new HttpOperationModel.Builder()
-				.method(HttpMethod.GET.name())
+				.method(HttpMethod.POST.name())
 				.path(DeviceQoSEvaluatorConstants.HTTP_API_OP_RELOAD_PATH)
 				.build();
 
@@ -246,12 +279,25 @@ public class DeviceQoSEvaluatorSystemInfo extends SystemInfo {
 	// MQTT Interfaces
 
 	//-------------------------------------------------------------------------------------------------
+	private InterfaceModel getMqttServiceInterfaceForGeneralManagement() {
+		if (!isMqttApiEnabled()) {
+			return null;
+		}
+
+		final String templateName = isSslEnabled() ? Constants.GENERIC_MQTTS_INTERFACE_TEMPLATE_NAME : Constants.GENERIC_MQTT_INTERFACE_TEMPLATE_NAME;
+		return new MqttInterfaceModel.Builder(templateName, getMqttBrokerAddress(), getMqttBrokerPort())
+				.baseTopic(DeviceQoSEvaluatorConstants.MQTT_API_GENERAL_MANAGEMENT_BASE_TOPIC)
+				.operations(Set.of(Constants.SERVICE_OP_GET_LOG, Constants.SERVICE_OP_GET_CONFIG))
+				.build();
+	}
+
+	//-------------------------------------------------------------------------------------------------
 	private InterfaceModel getMqttServiceInterfaceForQualityEvaluationService() {
 		if (!isMqttApiEnabled()) {
 			return null;
 		}
 
-		final String templateName = getSslProperties().isSslEnabled() ? Constants.GENERIC_MQTTS_INTERFACE_TEMPLATE_NAME : Constants.GENERIC_MQTT_INTERFACE_TEMPLATE_NAME;
+		final String templateName = isSslEnabled() ? Constants.GENERIC_MQTTS_INTERFACE_TEMPLATE_NAME : Constants.GENERIC_MQTT_INTERFACE_TEMPLATE_NAME;
 		return new MqttInterfaceModel.Builder(templateName, getMqttBrokerAddress(), getMqttBrokerPort())
 				.baseTopic(DeviceQoSEvaluatorConstants.MQTT_API_QUALITY_EVALUATION_BASE_TOPIC)
 				.operations(Set.of(Constants.SERVICE_OP_FILTER, Constants.SERVICE_OP_SORT))
@@ -264,7 +310,7 @@ public class DeviceQoSEvaluatorSystemInfo extends SystemInfo {
 			return null;
 		}
 
-		final String templateName = getSslProperties().isSslEnabled() ? Constants.GENERIC_MQTTS_INTERFACE_TEMPLATE_NAME : Constants.GENERIC_MQTT_INTERFACE_TEMPLATE_NAME;
+		final String templateName = isSslEnabled() ? Constants.GENERIC_MQTTS_INTERFACE_TEMPLATE_NAME : Constants.GENERIC_MQTT_INTERFACE_TEMPLATE_NAME;
 		return new MqttInterfaceModel.Builder(templateName, getMqttBrokerAddress(), getMqttBrokerPort())
 				.baseTopic(DeviceQoSEvaluatorConstants.MQTT_API_DEVICE_QUALITY_DATA_MANAGEMENT_BASE_TOPIC)
 				.operations(Set.of(Constants.SERVICE_OP_QUERY, Constants.SERVICE_OP_RELOAD))

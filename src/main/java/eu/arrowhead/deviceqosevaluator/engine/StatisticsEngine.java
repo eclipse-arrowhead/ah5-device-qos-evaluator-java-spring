@@ -73,7 +73,7 @@ public class StatisticsEngine {
 		for (final String sysName : systemNames) {
 			boolean found = false;
 			for (final System sysRecord : systemRecords) {
-				if (sysName.equalsIgnoreCase(sysRecord.getName())) {
+				if (sysName.equals(sysRecord.getName())) {
 					deviceMap.putIfAbsent(sysRecord.getDevice().getId(), new ArrayList<>());
 					deviceMap.get(sysRecord.getDevice().getId()).add(new SystemEvalModel(sysName));
 					found = true;
@@ -179,8 +179,9 @@ public class StatisticsEngine {
 			return Stat.median(values) * weight;
 
 		default:
-			logger.error("Unhandled OID metric: " + metric);
-			return 0;
+			final String errorMsg = "Unhandled OID metric: " + metric;
+			logger.error(errorMsg);
+			throw new IllegalArgumentException(errorMsg);
 		}
 	}
 

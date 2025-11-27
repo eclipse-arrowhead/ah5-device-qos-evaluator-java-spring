@@ -30,6 +30,7 @@ public final class DeviceQoSEvaluatorConstants {
 	public static final int SEC_TO_MS = 1000;
 	public static final int MIN_TO_SEC = 60;
 
+	public static final String VERSION_GENERAL_MANAGEMENT = "1.0.0";
 	public static final String VERSION_QUALITY_EVALUATION = "1.0.0";
 	public static final String VERSION_DEVICE_QUALITY_DATA_MANAGEMENT = "1.0.0";
 
@@ -62,10 +63,10 @@ public final class DeviceQoSEvaluatorConstants {
 	// API related
 
 	public static final String HTTP_API_BASE_PATH = "/deviceqosevaluator";
-	public static final String HTTP_API_MGMT_PATH = HTTP_API_BASE_PATH + "/mgmt";
 	public static final String HTTP_API_MONITOR_PATH = HTTP_API_BASE_PATH + "/monitor";
+	public static final String HTTP_API_GENERAL_MANAGEMENT_PATH = HTTP_API_BASE_PATH + "/general/mgmt";
 	public static final String HTTP_API_QUALITY_EVALUATION_PATH = HTTP_API_BASE_PATH + "/qualityevaluation";
-	public static final String HTTP_API_DEVICE_QUALITY_DATA_MANAGEMENT_PATH = HTTP_API_MGMT_PATH + "/devicequalitydatamanagement";
+	public static final String HTTP_API_DEVICE_QUALITY_DATA_MANAGEMENT_PATH = HTTP_API_BASE_PATH + "/mgmt";
 
 	public static final String HTTP_API_OP_FILTER_PATH = "/filter";
 	public static final String HTTP_API_OP_SORT_PATH = "/sort";
@@ -74,8 +75,9 @@ public final class DeviceQoSEvaluatorConstants {
 
 	public static final String MQTT_API_BASE_TOPIC_PREFIX = "arrowhead/deviceqosevaluator";
 	public static final String MQTT_API_MONITOR_BASE_TOPIC = MQTT_API_BASE_TOPIC_PREFIX + "/monitor/";
+	public static final String MQTT_API_GENERAL_MANAGEMENT_BASE_TOPIC = MQTT_API_BASE_TOPIC_PREFIX + "/general/management/";
 	public static final String MQTT_API_QUALITY_EVALUATION_BASE_TOPIC = MQTT_API_BASE_TOPIC_PREFIX + "/qualityevaluation/";
-	public static final String MQTT_API_DEVICE_QUALITY_DATA_MANAGEMENT_BASE_TOPIC = MQTT_API_BASE_TOPIC_PREFIX + "/devicequalitydatamanagement/";
+	public static final String MQTT_API_DEVICE_QUALITY_DATA_MANAGEMENT_BASE_TOPIC = MQTT_API_BASE_TOPIC_PREFIX + "/management/";
 
 	// Quartz related
 
@@ -86,6 +88,7 @@ public final class DeviceQoSEvaluatorConstants {
 
 	// Measurement related
 
+	public static final int AUGMENTED_MEASUREMENT_PORT = 59473;
 	public static final List<Double> NO_MEASUREMENT_VALUES = List.of(-1d, -1d, -1d, -1d, -1d);
 
 	//=================================================================================================

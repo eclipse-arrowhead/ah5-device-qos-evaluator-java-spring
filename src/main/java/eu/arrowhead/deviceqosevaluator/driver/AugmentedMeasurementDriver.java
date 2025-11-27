@@ -31,6 +31,7 @@ import org.springframework.web.util.UriComponents;
 
 import eu.arrowhead.common.Constants;
 import eu.arrowhead.common.http.HttpUtilities;
+import eu.arrowhead.deviceqosevaluator.DeviceQoSEvaluatorConstants;
 import eu.arrowhead.deviceqosevaluator.DeviceQoSEvaluatorSystemInfo;
 import eu.arrowhead.deviceqosevaluator.dto.AugmentedMeasurementsDTO;
 import io.netty.channel.ChannelOption;
@@ -50,7 +51,6 @@ public class AugmentedMeasurementDriver {
 	@Autowired
 	private DeviceQoSEvaluatorSystemInfo sysInfo;
 
-	private static final int port = 59473;
 	private static final String path = "/device-qos";
 	private static final String paramKey = "batch";
 	private static final int deviceClientWindowSize = 30; // sec
@@ -66,7 +66,7 @@ public class AugmentedMeasurementDriver {
 
 	//-------------------------------------------------------------------------------------------------
 	public AugmentedMeasurementsDTO fetch(final String address) {
-		final UriComponents uri = HttpUtilities.createURI(Constants.HTTP, address, port, path, paramKey, batchSize);
+		final UriComponents uri = HttpUtilities.createURI(Constants.HTTP, address, DeviceQoSEvaluatorConstants.AUGMENTED_MEASUREMENT_PORT, path, paramKey, batchSize);
 		final RequestBodySpec spec = client.method(HttpMethod.GET).uri(uri.toUri());
 		return spec.retrieve().bodyToMono(AugmentedMeasurementsDTO.class).block(Duration.ofMillis(socketTimeout));
 	}
@@ -82,7 +82,7 @@ public class AugmentedMeasurementDriver {
 				.doOnConnected(this::initConnectionHandlers);
 
 		this.client = createWebClient(httpCLient);
-		long frequency = sysInfo.getAugmentedMeasurementJobInterval();
+		final long frequency = sysInfo.getAugmentedMeasurementJobInterval();
 		this.batchSize = frequency > deviceClientWindowSize ? String.valueOf(deviceClientWindowSize) : String.valueOf(frequency);
 	}
 
@@ -98,7 +98,6 @@ public class AugmentedMeasurementDriver {
 				.builder()
 				.clientConnector(new ReactorClientHttpConnector(client))
 				.defaultHeader(HttpHeaderNames.ACCEPT.toString(), MediaType.APPLICATION_JSON_VALUE)
-				.defaultHeader(HttpHeaderNames.CONTENT_TYPE.toString(), MediaType.APPLICATION_JSON_VALUE)
 				.defaultHeader(HttpHeaderNames.CONNECTION.toString(), "keep-alive");
 
 		return builder.build();

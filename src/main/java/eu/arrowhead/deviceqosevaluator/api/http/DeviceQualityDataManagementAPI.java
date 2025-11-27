@@ -21,7 +21,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -89,11 +88,11 @@ public class DeviceQualityDataManagementAPI {
 			@ApiResponse(responseCode = Constants.HTTP_STATUS_INTERNAL_SERVER_ERROR, description = Constants.SWAGGER_HTTP_500_MESSAGE, content = {
 					@Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorMessageDTO.class)) })
 	})
-	@GetMapping(path = DeviceQoSEvaluatorConstants.HTTP_API_OP_RELOAD_PATH, produces = MediaType.TEXT_PLAIN_VALUE)
+	@PostMapping(path = DeviceQoSEvaluatorConstants.HTTP_API_OP_RELOAD_PATH, produces = MediaType.TEXT_PLAIN_VALUE)
 	public String reload() {
 		logger.debug("reload started");
 
-		final String origin = HttpMethod.GET.name() + " " + DeviceQoSEvaluatorConstants.HTTP_API_DEVICE_QUALITY_DATA_MANAGEMENT_PATH + DeviceQoSEvaluatorConstants.HTTP_API_OP_RELOAD_PATH;
+		final String origin = HttpMethod.POST.name() + " " + DeviceQoSEvaluatorConstants.HTTP_API_DEVICE_QUALITY_DATA_MANAGEMENT_PATH + DeviceQoSEvaluatorConstants.HTTP_API_OP_RELOAD_PATH;
 		return mgmtService.reload(origin);
 	}
 }

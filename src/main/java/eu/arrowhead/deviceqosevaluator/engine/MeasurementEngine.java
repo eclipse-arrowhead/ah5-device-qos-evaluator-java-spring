@@ -236,7 +236,7 @@ public class MeasurementEngine {
 
 	//-------------------------------------------------------------------------------------------------
 	private Device specifyDevice(final List<Device> devices) {
-		logger.debug("selectDevices started");
+		logger.debug("specifyDevice started");
 
 		Device selected = devices.getFirst();
 

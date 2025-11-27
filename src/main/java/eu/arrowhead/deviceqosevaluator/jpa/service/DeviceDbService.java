@@ -52,7 +52,7 @@ public class DeviceDbService {
 
 	//-------------------------------------------------------------------------------------------------
 	public Optional<Device> findById(final UUID id) {
-		logger.debug("findByAddresses started");
+		logger.debug("findById started");
 
 		try {
 			return deviceRepo.findById(id);
@@ -78,7 +78,7 @@ public class DeviceDbService {
 
 	//-------------------------------------------------------------------------------------------------
 	public Page<Device> getPage(final Pageable page) {
-		logger.debug("findByAddresses started");
+		logger.debug("getPage started");
 
 		try {
 			return deviceRepo.findAll(page);
@@ -137,7 +137,7 @@ public class DeviceDbService {
 	//-------------------------------------------------------------------------------------------------
 	@Transactional(rollbackFor = ArrowheadException.class)
 	public void remove(final Iterable<Device> devices) {
-		logger.debug("update started");
+		logger.debug("remove started");
 
 		try {
 			deviceRepo.deleteAllInBatch(devices);
