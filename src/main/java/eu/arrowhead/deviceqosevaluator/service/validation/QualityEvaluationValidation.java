@@ -58,6 +58,43 @@ public class QualityEvaluationValidation {
 	//=================================================================================================
 	// methods
 
+	// NORMALIZATION
+
+	//-------------------------------------------------------------------------------------------------
+	public Pair<List<String>, QoSDeviceDataEvaluationConfigDTO> validateAndNormalizeQoSEvaluationRequest(final List<String> systems, final QoSDeviceDataEvaluationConfigDTO config, final boolean needThreshold, final String origin) {
+		logger.debug("validateAndNormalizeQoSEvaluationRequestDTO started");
+		Assert.isTrue(!Utilities.isEmpty(origin), "origin is empty");
+
+		validateQoSEvaluationRequest(systems, config, needThreshold, origin);
+		final List<String> normalizedSystemNames = normalizator.normalizeSystemNames(systems);
+		final QoSDeviceDataEvaluationConfigDTO normalizedConfig = normalizator.normalizeQoSDeviceDataEvaluationConfigDTO(config);
+
+		try {
+			for (final String provider : normalizedSystemNames) {
+				systemNameValidator.validateSystemName(provider);
+			}
+		} catch (final InvalidParameterException ex) {
+			throw new InvalidParameterException(ex.getMessage(), origin);
+		}
+
+		for (final String metricName : normalizedConfig.metricNames()) {
+			final int splitIdx = metricName.lastIndexOf(DeviceQoSEvaluatorConstants.OID_NAME_DELIMITER);
+			if (splitIdx <= 0 || splitIdx == metricName.length() - 1) {
+				throw new InvalidParameterException("Invalid metric name " + metricName, origin);
+			}
+
+			if (!Utilities.isEnumValue(metricName.substring(0, splitIdx), OidGroup.class)
+					|| !Utilities.isEnumValue(metricName.substring(splitIdx + 1), OidMetric.class)) {
+				throw new InvalidParameterException("Invalid metric name " + metricName, origin);
+			}
+		}
+
+		return Pair.of(normalizedSystemNames, normalizedConfig);
+	}
+
+	//=================================================================================================
+	// assistant methods
+
 	// VALIDATION
 
 	//-------------------------------------------------------------------------------------------------
@@ -113,39 +150,5 @@ public class QualityEvaluationValidation {
 				throw new InvalidParameterException("Invalid time window configuration, must be not greater than " + sysInfo.getEvaluationTimeWindow(), origin);
 			}
 		}
-	}
-
-	// NORMALIZATION
-
-	//-------------------------------------------------------------------------------------------------
-	public Pair<List<String>, QoSDeviceDataEvaluationConfigDTO> validateAndNormalizeQoSEvaluationRequest(final List<String> systems, final QoSDeviceDataEvaluationConfigDTO config, final boolean needThreshold, final String origin) {
-		logger.debug("validateAndNormalizeQoSEvaluationRequestDTO started");
-		Assert.isTrue(!Utilities.isEmpty(origin), "origin is empty");
-
-		validateQoSEvaluationRequest(systems, config, needThreshold, origin);
-		final List<String> normalizedSystemNames = normalizator.normalizeSystemNames(systems);
-		final QoSDeviceDataEvaluationConfigDTO normalizedConfig = normalizator.normalizeQoSDeviceDataEvaluationConfigDTO(config);
-
-		try {
-			for (final String provider : normalizedSystemNames) {
-				systemNameValidator.validateSystemName(provider);
-			}
-		} catch (final InvalidParameterException ex) {
-			throw new InvalidParameterException(ex.getMessage(), origin);
-		}
-
-		for (final String metricName : normalizedConfig.metricNames()) {
-			final int splitIdx = metricName.lastIndexOf(DeviceQoSEvaluatorConstants.OID_NAME_DELIMITER);
-			if (splitIdx <= 0 || splitIdx == metricName.length() - 1) {
-				throw new InvalidParameterException("Invalid metric name " + metricName, origin);
-			}
-
-			if (!Utilities.isEnumValue(metricName.substring(0, splitIdx), OidGroup.class)
-					|| !Utilities.isEnumValue(metricName.substring(splitIdx + 1), OidMetric.class)) {
-				throw new InvalidParameterException("Invalid metric name " + metricName, origin);
-			}
-		}
-
-		return Pair.of(normalizedSystemNames, normalizedConfig);
 	}
 }

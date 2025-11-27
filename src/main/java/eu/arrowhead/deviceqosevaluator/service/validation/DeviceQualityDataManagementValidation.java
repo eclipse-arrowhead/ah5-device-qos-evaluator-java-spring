@@ -55,23 +55,6 @@ public class DeviceQualityDataManagementValidation {
 	//=================================================================================================
 	// methods
 
-	// VALIDATION
-
-	//-------------------------------------------------------------------------------------------------
-	private void validateQueryRequest(final QoSDeviceStatQueryRequestDTO dto, final String origin) {
-		logger.debug("validateQueryRequest");
-
-		if (dto == null) {
-			throw new InvalidParameterException("Request payload is missing", origin);
-		}
-
-		pageValidator.validatePageParameter(dto.pagination(), StatEntity.SORTABLE_FIELDS_BY, origin);
-
-		if (Utilities.isEmpty(dto.metricGroup())) {
-			throw new InvalidParameterException("metricGroup is missing", origin);
-		}
-	}
-
 	// VALIDATE & NORMALIZE
 
 	//-------------------------------------------------------------------------------------------------
@@ -128,5 +111,25 @@ public class DeviceQualityDataManagementValidation {
 		}
 
 		return normalized;
+	}
+
+	//=================================================================================================
+	// assistant methods
+
+	// VALIDATION
+
+	//-------------------------------------------------------------------------------------------------
+	private void validateQueryRequest(final QoSDeviceStatQueryRequestDTO dto, final String origin) {
+		logger.debug("validateQueryRequest");
+
+		if (dto == null) {
+			throw new InvalidParameterException("Request payload is missing", origin);
+		}
+
+		pageValidator.validatePageParameter(dto.pagination(), StatEntity.SORTABLE_FIELDS_BY, origin);
+
+		if (Utilities.isEmpty(dto.metricGroup())) {
+			throw new InvalidParameterException("metricGroup is missing", origin);
+		}
 	}
 }
